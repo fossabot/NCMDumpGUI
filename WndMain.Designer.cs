@@ -44,9 +44,9 @@
             label1.AutoSize = true;
             label1.Location = new Point(12, 9);
             label1.Name = "label1";
-            label1.Size = new Size(154, 24);
+            label1.Size = new Size(352, 24);
             label1.TabIndex = 0;
-            label1.Text = "请输入文件路径：";
+            label1.Text = "请输入文件路径（或将文件拖入本窗口）：";
             // 
             // filepathTextBox
             // 
@@ -112,6 +112,7 @@
             // 
             // WndMain
             // 
+            AllowDrop = true;
             AutoScaleDimensions = new SizeF(11F, 24F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(531, 151);
@@ -123,7 +124,9 @@
             Controls.Add(label1);
             FormBorderStyle = FormBorderStyle.FixedToolWindow;
             Name = "WndMain";
-            Text = "NCMDumpGUI v1.0.0.0";
+            Text = "NCMDumpGUI v1.0.0.1";
+            DragDrop += WndMain_DragDrop;
+            DragEnter += WndMain_DragEnter;
             KeyDown += WndMain_KeyDown;
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
