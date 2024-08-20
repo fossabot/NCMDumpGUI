@@ -8,11 +8,15 @@ namespace NCMDumpGUI
 {
     public partial class WndMain : Form
     {
+        // 初始化
         public WndMain()
         {
             InitializeComponent();
+            toolTip.SetToolTip(fixMetaDataCheckBox, "将歌曲的详细信息添加到转换后的文件\n注意：不能保证100%正常工作，部分元数据可能无法修复！");
+            toolTip.SetToolTip(convertButton, "点击开始转换文件到能被主流播放器识别的格式");
         }
 
+        // 窗口标题栏右键菜单
         #region fields
         private const int WM_SYSCOMMAND = 0X112;
         private const int MF_STRING = 0X0;
@@ -20,7 +24,6 @@ namespace NCMDumpGUI
         private enum SystemMenuItem : int
         {
             About,
-            FeedBack,
         }
         #endregion
 
@@ -59,13 +62,14 @@ namespace NCMDumpGUI
                 switch ((SystemMenuItem)m.WParam)
                 {
                     case SystemMenuItem.About:
-                        MessageBox.Show("NCMDumpGUI v1.0.0.2\n基于libncmdump开发", "关于", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show("NCMDumpGUI v1.0.0.2\n基于libncmdump开发\n仅供学习使用", "关于", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         break;
                 }
             }
         }
         #endregion
 
+        // “浏览”按钮被点击
         private void browseButton_Click(object sender, EventArgs e)
         {
             OpenFileDialog dialog = new OpenFileDialog();
@@ -77,6 +81,7 @@ namespace NCMDumpGUI
             }
         }
 
+        // 检查ncm二进制文件
         private bool CheckNCMBinary(string filePath)
         {
             string correctHeader = "CTENFDAM";
@@ -93,6 +98,7 @@ namespace NCMDumpGUI
                         string header = Encoding.ASCII.GetString(bytes);
                         if (header == correctHeader)
                         {
+                            toolStripProgressBar1.Value += 1;
                             return true;
                         }
                         else
@@ -118,6 +124,7 @@ namespace NCMDumpGUI
             }
         }
 
+        // 检查路径合法性
         public static bool IsValidFilePath(string path)
         {
             if (Path.GetInvalidPathChars().Any(c => path.Contains(c)))
@@ -135,6 +142,7 @@ namespace NCMDumpGUI
             }
         }
 
+        // “转换”按钮被点击
         private void convertButton_Click(object sender, EventArgs e)
         {
             if (filepathTextBox.Text == "")
@@ -163,10 +171,13 @@ namespace NCMDumpGUI
                 browseButton.Enabled = false;
                 convertButton.Enabled = false;
                 NeteaseCrypt neteaseCrypt = new NeteaseCrypt(filepathTextBox.Text);
+                toolStripProgressBar1.Value += 1;
                 int result = neteaseCrypt.Dump();
+                toolStripProgressBar1.Value += 1;
                 if (fixMetaDataCheckBox.Checked)
                 {
                     neteaseCrypt.FixMetadata();
+                    toolStripProgressBar1.Value += 1;
                 }
                 neteaseCrypt.Destroy();
                 if (result != 0)
@@ -176,13 +187,16 @@ namespace NCMDumpGUI
                 else
                 {
                     toolStripStatusLabel2.Text = "转换完成！文件在ncm歌曲同级目录下";
+                    toolStripProgressBar1.Value += 1;
                 }
                 filepathTextBox.Enabled = true;
                 browseButton.Enabled = true;
                 convertButton.Enabled = true;
+                toolStripProgressBar1.Value = 0;
             }
         }
 
+        // 窗口键盘事件
         public void WndMain_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
@@ -191,6 +205,7 @@ namespace NCMDumpGUI
             }
         }
 
+        // 文件拖入
         private void WndMain_DragEnter(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
@@ -206,6 +221,20 @@ namespace NCMDumpGUI
         private void WndMain_DragDrop(object sender, DragEventArgs e)
         {
             filepathTextBox.Text = ((System.Array)e.Data.GetData(DataFormats.FileDrop)).GetValue(0).ToString();
+        }
+
+        // 进度条最大值修改
+        private void fixMetaDataCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            if (fixMetaDataCheckBox.Checked)
+            {
+                toolStripProgressBar1.Maximum = 5;
+            }
+            else
+            {
+                toolStripProgressBar1.Maximum = 4;
+            }
+            
         }
     }
 }

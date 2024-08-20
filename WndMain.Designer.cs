@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             label1 = new Label();
             filepathTextBox = new TextBox();
             browseButton = new Button();
@@ -35,7 +36,9 @@
             statusStrip1 = new StatusStrip();
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             toolStripStatusLabel2 = new ToolStripStatusLabel();
+            toolStripProgressBar1 = new ToolStripProgressBar();
             fixMetaDataCheckBox = new CheckBox();
+            toolTip = new ToolTip(components);
             statusStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -78,7 +81,7 @@
             // statusStrip1
             // 
             statusStrip1.ImageScalingSize = new Size(24, 24);
-            statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1, toolStripStatusLabel2 });
+            statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1, toolStripStatusLabel2, toolStripProgressBar1 });
             statusStrip1.Location = new Point(0, 119);
             statusStrip1.Name = "statusStrip1";
             statusStrip1.Size = new Size(531, 32);
@@ -98,6 +101,15 @@
             toolStripStatusLabel2.Size = new Size(100, 25);
             toolStripStatusLabel2.Text = "请提供文件";
             // 
+            // toolStripProgressBar1
+            // 
+            toolStripProgressBar1.Alignment = ToolStripItemAlignment.Right;
+            toolStripProgressBar1.MarqueeAnimationSpeed = 1;
+            toolStripProgressBar1.Maximum = 5;
+            toolStripProgressBar1.Name = "toolStripProgressBar1";
+            toolStripProgressBar1.Size = new Size(100, 24);
+            toolStripProgressBar1.Step = 5;
+            // 
             // fixMetaDataCheckBox
             // 
             fixMetaDataCheckBox.AutoSize = true;
@@ -109,6 +121,7 @@
             fixMetaDataCheckBox.TabIndex = 5;
             fixMetaDataCheckBox.Text = "修复元数据";
             fixMetaDataCheckBox.UseVisualStyleBackColor = true;
+            fixMetaDataCheckBox.CheckedChanged += fixMetaDataCheckBox_CheckedChanged;
             // 
             // WndMain
             // 
@@ -144,5 +157,7 @@
         private ToolStripStatusLabel toolStripStatusLabel1;
         private ToolStripStatusLabel toolStripStatusLabel2;
         private CheckBox fixMetaDataCheckBox;
+        private ToolTip toolTip;
+        private ToolStripProgressBar toolStripProgressBar1;
     }
 }
