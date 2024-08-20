@@ -112,8 +112,25 @@ namespace NCMDumpGUI
             }
             catch (Exception ex)
             {
-                MessageBox.Show("发生错误: " + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                toolStripStatusLabel2.Text = "发生错误: \n" + ex.Message;
+                MessageBox.Show("发生错误: \n" + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                toolStripStatusLabel2.Text = "载入文件时发生错误";
+                return false;
+            }
+        }
+
+        public static bool IsValidFilePath(string path)
+        {
+            if (Path.GetInvalidPathChars().Any(c => path.Contains(c)))
+            {
+                return false;
+            }
+            try
+            {
+                string normalizedPath = Path.GetFullPath(path);
+                return Path.IsPathRooted(normalizedPath);
+            }
+            catch
+            {
                 return false;
             }
         }
@@ -124,6 +141,11 @@ namespace NCMDumpGUI
             {
                 MessageBox.Show("文件路径为空！\n请提供ncm文件路径", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 toolStripStatusLabel2.Text = "请提供文件";
+            }
+            else if (!IsValidFilePath(filepathTextBox.Text))
+            {
+                MessageBox.Show("非法文件路径\n文件路径中包含非法字符！", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                toolStripStatusLabel2.Text = "非法文件路径";
             }
             else if (!filepathTextBox.Text.EndsWith(".ncm"))
             {
