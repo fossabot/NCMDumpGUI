@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
@@ -58,7 +59,7 @@ namespace NCMDumpGUI
                 switch ((SystemMenuItem)m.WParam)
                 {
                     case SystemMenuItem.About:
-                        MessageBox.Show("NCMDumpGUI v1.0.0.1\n基于libncmdump开发", "关于", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show("NCMDumpGUI v1.0.0.2\n基于libncmdump开发", "关于", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         break;
                 }
             }
@@ -76,21 +77,65 @@ namespace NCMDumpGUI
             }
         }
 
+        private bool CheckNCMBinary(string filePath)
+        {
+            string correctHeader = "CTENFDAM";
+
+            try
+            {
+                using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                {
+                    byte[] bytes = new byte[8];
+                    int bytesRead = fileStream.Read(bytes, 0, 8);
+
+                    if (bytesRead == 8)
+                    {
+                        string header = Encoding.ASCII.GetString(bytes);
+                        if (header == correctHeader)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            MessageBox.Show("不是ncm文件\n文件头为：" + header, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            toolStripStatusLabel2.Text = "不是ncm文件！";
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("文件大小异常", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        toolStripStatusLabel2.Text = "文件大小异常，并不是ncm文件";
+                        return false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("发生错误: " + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                toolStripStatusLabel2.Text = "发生错误: \n" + ex.Message;
+                return false;
+            }
+        }
+
         private void convertButton_Click(object sender, EventArgs e)
         {
             if (filepathTextBox.Text == "")
             {
                 MessageBox.Show("文件路径为空！\n请提供ncm文件路径", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                toolStripStatusLabel2.Text = "请提供文件";
             }
             else if (!filepathTextBox.Text.EndsWith(".ncm"))
             {
                 MessageBox.Show("这似乎并不是ncm文件！\n请提供ncm文件", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                toolStripStatusLabel2.Text = "请提供正确的ncm文件";
             }
             else if (!File.Exists("libncmdump.dll"))
             {
                 MessageBox.Show("核心不存在\n请确认libncmdump.dll与本程序在同一目录", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                toolStripStatusLabel2.Text = "核心不存在！请检查libncmdump.dll";
             }
-            else
+            else if (CheckNCMBinary(filepathTextBox.Text))
             {
                 filepathTextBox.Enabled = false;
                 browseButton.Enabled = false;

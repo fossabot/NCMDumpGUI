@@ -124,7 +124,7 @@
             Controls.Add(label1);
             FormBorderStyle = FormBorderStyle.FixedToolWindow;
             Name = "WndMain";
-            Text = "NCMDumpGUI v1.0.0.1";
+            Text = "NCMDumpGUI v1.0.0.2";
             DragDrop += WndMain_DragDrop;
             DragEnter += WndMain_DragEnter;
             KeyDown += WndMain_KeyDown;
