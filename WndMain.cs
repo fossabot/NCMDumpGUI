@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
@@ -14,6 +15,7 @@ namespace NCMDumpGUI
             InitializeComponent();
             toolTip.SetToolTip(fixMetaDataCheckBox, "将歌曲的详细信息添加到转换后的文件\n注意：不能保证100%正常工作，部分元数据可能无法修复！");
             toolTip.SetToolTip(convertButton, "点击开始转换文件到能被主流播放器识别的格式");
+            fileFolderComboBox.SelectedIndex = 0;
 
         }
 
@@ -63,7 +65,7 @@ namespace NCMDumpGUI
                 switch ((SystemMenuItem)m.WParam)
                 {
                     case SystemMenuItem.About:
-                        MessageBox.Show("NCMDumpGUI v1.0.0.3\n基于libncmdump开发\n使用MIT许可证开源", "关于", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show("NCMDumpGUI v1.0.1.0\n基于libncmdump开发\n使用MIT许可证开源", "关于", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         break;
                 }
             }
@@ -73,12 +75,26 @@ namespace NCMDumpGUI
         // “浏览”按钮被点击
         private void browseButton_Click(object sender, EventArgs e)
         {
-            OpenFileDialog dialog = new OpenFileDialog();
-            dialog.Filter = "NCM加密歌曲|*.ncm";
-            DialogResult result = dialog.ShowDialog();
-            if (result == DialogResult.OK)
+            if (fileFolderComboBox.SelectedIndex == 0)
             {
-                filepathTextBox.Text = dialog.FileName;
+                OpenFileDialog dialog = new OpenFileDialog();
+                dialog.Filter = "NCM加密歌曲|*.ncm";
+                DialogResult result = dialog.ShowDialog();
+                if (result == DialogResult.OK)
+                {
+                    filepathTextBox.Text = dialog.FileName;
+                }
+            }
+            else if (fileFolderComboBox.SelectedIndex == 1)
+            {
+                FolderBrowserDialog dialog = new FolderBrowserDialog();
+                dialog.ShowNewFolderButton = true;
+                dialog.RootFolder = Environment.SpecialFolder.ApplicationData;
+                DialogResult result = dialog.ShowDialog();
+                if (result == DialogResult.OK)
+                {
+                    filepathTextBox.Text = dialog.SelectedPath;
+                }
             }
         }
 
@@ -99,28 +115,36 @@ namespace NCMDumpGUI
                         string header = Encoding.ASCII.GetString(bytes);
                         if (header == correctHeader)
                         {
-                            toolStripProgressBar1.Value += 1;
                             return true;
                         }
                         else
                         {
-                            MessageBox.Show("不是ncm文件\n文件头为：" + header, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            toolStripStatusLabel2.Text = "不是ncm文件！";
+                            if (fileFolderComboBox.SelectedIndex == 0)
+                            {
+                                MessageBox.Show("不是ncm文件\n文件头为：" + header, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                toolStripStatusLabel2.Text = "不是ncm文件！";
+                            }
                             return false;
                         }
                     }
                     else
                     {
-                        MessageBox.Show("文件大小异常", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        toolStripStatusLabel2.Text = "文件大小异常，并不是ncm文件";
+                        if (fileFolderComboBox.SelectedIndex == 0)
+                        {
+                            MessageBox.Show("文件大小异常", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            toolStripStatusLabel2.Text = "文件大小异常，并不是ncm文件";
+                        }
                         return false;
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("发生错误: \n" + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                toolStripStatusLabel2.Text = "载入文件时发生错误";
+                if (fileFolderComboBox.SelectedIndex == 0)
+                {
+                    MessageBox.Show("发生错误: \n" + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    toolStripStatusLabel2.Text = "载入文件时发生错误";
+                }
                 return false;
             }
         }
@@ -143,10 +167,27 @@ namespace NCMDumpGUI
             }
         }
 
+        public int ProcessNCMFile(string path)
+        {
+            NeteaseCrypt neteaseCrypt = new NeteaseCrypt(path);
+            int result = neteaseCrypt.Dump();
+            if (fixMetaDataCheckBox.Checked)
+            {
+                neteaseCrypt.FixMetadata();
+            }
+            neteaseCrypt.Destroy();
+            return result;
+        }
+
         // “转换”按钮被点击
         private void convertButton_Click(object sender, EventArgs e)
         {
-            if (filepathTextBox.Text == "")
+            if (!File.Exists("libncmdump.dll"))
+            {
+                MessageBox.Show("核心不存在\n请确认libncmdump.dll与本程序在同一目录", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                toolStripStatusLabel2.Text = "核心不存在！请检查libncmdump.dll";
+            }
+            else if (filepathTextBox.Text == "")
             {
                 MessageBox.Show("文件路径为空！\n请提供ncm文件路径", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 toolStripStatusLabel2.Text = "请提供文件";
@@ -156,43 +197,73 @@ namespace NCMDumpGUI
                 MessageBox.Show("非法文件路径\n文件路径中包含非法字符！", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 toolStripStatusLabel2.Text = "非法文件路径";
             }
-            else if (!filepathTextBox.Text.EndsWith(".ncm"))
-            {
-                MessageBox.Show("这似乎并不是ncm文件！\n请提供ncm文件", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                toolStripStatusLabel2.Text = "请提供正确的ncm文件";
-            }
-            else if (!File.Exists("libncmdump.dll"))
-            {
-                MessageBox.Show("核心不存在\n请确认libncmdump.dll与本程序在同一目录", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                toolStripStatusLabel2.Text = "核心不存在！请检查libncmdump.dll";
-            }
-            else if (CheckNCMBinary(filepathTextBox.Text))
+            else
             {
                 filepathTextBox.Enabled = false;
                 browseButton.Enabled = false;
                 convertButton.Enabled = false;
-                NeteaseCrypt neteaseCrypt = new NeteaseCrypt(filepathTextBox.Text);
-                toolStripProgressBar1.Value += 1;
-                int result = neteaseCrypt.Dump();
-                toolStripProgressBar1.Value += 1;
-                if (fixMetaDataCheckBox.Checked)
+                fileFolderComboBox.Enabled = false;
+                fixMetaDataCheckBox.Enabled = false;
+                if (fileFolderComboBox.SelectedIndex == 1)
                 {
-                    neteaseCrypt.FixMetadata();
-                    toolStripProgressBar1.Value += 1;
+                    int bypassFiles = 0;
+                    int processedFiles = 0;
+                    int allProcessedFiles = 0;
+                    string directoryPath = filepathTextBox.Text;
+                    string fileExtension = ".ncm";
+                    string[] files = Directory.GetFiles(directoryPath, "*.*", SearchOption.TopDirectoryOnly)
+                        .Where(file => Path.GetExtension(file).ToLower() == fileExtension.ToLower())
+                        .ToArray();
+
+                    toolStripProgressBar1.Maximum = files.Length;
+                    foreach (var file in files)
+                    {
+                        if (CheckNCMBinary(file))
+                        {
+                            if (ProcessNCMFile(file) != 0)
+                            {
+                                bypassFiles += 1;
+                            }
+                            else
+                            {
+                                processedFiles += 1;
+                            }
+                        }
+                        allProcessedFiles += 1;
+                        Debug.WriteLine(allProcessedFiles.ToString());
+                        toolStripProgressBar1.Value = allProcessedFiles;
+                        toolStripStatusLabel2.Text = "已处理：" + allProcessedFiles.ToString();
+                    }
+                    toolStripStatusLabel2.Text = "成功：" + processedFiles.ToString() + "；失败：" + bypassFiles.ToString();
                 }
-                neteaseCrypt.Destroy();
-                if (result != 0)
+                else if (fileFolderComboBox.SelectedIndex == 0)
                 {
-                    toolStripStatusLabel2.Text = "发生错误，返回值为：" + result.ToString();
-                }
-                else
-                {
-                    toolStripStatusLabel2.Text = "转换完成！文件在ncm歌曲同级目录下";
-                    toolStripProgressBar1.Value += 1;
+                    toolStripProgressBar1.Maximum = 1;
+                    if (!filepathTextBox.Text.EndsWith(".ncm"))
+                    {
+                        MessageBox.Show("这似乎并不是ncm文件！\n请提供ncm文件", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        toolStripStatusLabel2.Text = "请提供正确的ncm文件";
+                    }
+                    else if (CheckNCMBinary(filepathTextBox.Text))
+                    {
+                        int result = ProcessNCMFile(filepathTextBox.Text);
+                        toolStripProgressBar1.Value += 1;
+                        if (result != 0)
+                        {
+                            toolStripStatusLabel2.Text = "发生错误，返回值为：" + result.ToString();
+                        }
+                        else
+                        {
+                            toolStripStatusLabel2.Text = "转换完成！文件在ncm歌曲同级目录下";
+                            toolStripProgressBar1.Value += 1;
+                        }
+                    }
                 }
                 filepathTextBox.Enabled = true;
                 browseButton.Enabled = true;
                 convertButton.Enabled = true;
+                fileFolderComboBox.Enabled = true;
+                fixMetaDataCheckBox.Enabled = true;
                 toolStripProgressBar1.Value = 0;
             }
         }
@@ -224,23 +295,14 @@ namespace NCMDumpGUI
             filepathTextBox.Text = ((System.Array)e.Data.GetData(DataFormats.FileDrop)).GetValue(0).ToString();
         }
 
-        // 进度条最大值修改
-        private void fixMetaDataCheckBox_CheckedChanged(object sender, EventArgs e)
-        {
-            if (fixMetaDataCheckBox.Checked)
-            {
-                toolStripProgressBar1.Maximum = 5;
-            }
-            else
-            {
-                toolStripProgressBar1.Maximum = 4;
-            }
-
-        }
-
         private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             MessageBox.Show("注意！\n此应用只用于学习用途，禁止用于商业或违法用途，\n请在遵守NCM文件提供平台的服务条款下使用本应用，\n作者对商业或违法使用本软件造成的任何后果不承担任何责任！", "免责声明", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void fileFolderComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            filepathTextBox.Text = "";
         }
     }
 }

@@ -40,6 +40,7 @@
             fixMetaDataCheckBox = new CheckBox();
             toolTip = new ToolTip(components);
             linkLabel1 = new LinkLabel();
+            fileFolderComboBox = new ComboBox();
             statusStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -54,9 +55,9 @@
             // 
             // filepathTextBox
             // 
-            filepathTextBox.Location = new Point(16, 36);
+            filepathTextBox.Location = new Point(93, 37);
             filepathTextBox.Name = "filepathTextBox";
-            filepathTextBox.Size = new Size(452, 30);
+            filepathTextBox.Size = new Size(379, 30);
             filepathTextBox.TabIndex = 1;
             // 
             // browseButton
@@ -109,7 +110,6 @@
             // 
             toolStripProgressBar1.Alignment = ToolStripItemAlignment.Right;
             toolStripProgressBar1.MarqueeAnimationSpeed = 1;
-            toolStripProgressBar1.Maximum = 5;
             toolStripProgressBar1.Name = "toolStripProgressBar1";
             toolStripProgressBar1.Size = new Size(100, 28);
             toolStripProgressBar1.Step = 5;
@@ -125,7 +125,6 @@
             fixMetaDataCheckBox.TabIndex = 5;
             fixMetaDataCheckBox.Text = "修复元数据";
             fixMetaDataCheckBox.UseVisualStyleBackColor = true;
-            fixMetaDataCheckBox.CheckedChanged += fixMetaDataCheckBox_CheckedChanged;
             // 
             // linkLabel1
             // 
@@ -138,12 +137,25 @@
             linkLabel1.Text = "免责声明";
             linkLabel1.LinkClicked += linkLabel1_LinkClicked;
             // 
+            // fileFolderComboBox
+            // 
+            fileFolderComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+            fileFolderComboBox.FlatStyle = FlatStyle.System;
+            fileFolderComboBox.FormattingEnabled = true;
+            fileFolderComboBox.Items.AddRange(new object[] { "文件", "目录" });
+            fileFolderComboBox.Location = new Point(16, 35);
+            fileFolderComboBox.Name = "fileFolderComboBox";
+            fileFolderComboBox.Size = new Size(77, 32);
+            fileFolderComboBox.TabIndex = 7;
+            fileFolderComboBox.SelectedIndexChanged += fileFolderComboBox_SelectedIndexChanged;
+            // 
             // WndMain
             // 
             AllowDrop = true;
             AutoScaleDimensions = new SizeF(11F, 24F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(531, 152);
+            Controls.Add(fileFolderComboBox);
             Controls.Add(linkLabel1);
             Controls.Add(fixMetaDataCheckBox);
             Controls.Add(statusStrip1);
@@ -153,7 +165,7 @@
             Controls.Add(label1);
             FormBorderStyle = FormBorderStyle.FixedToolWindow;
             Name = "WndMain";
-            Text = "NCMDumpGUI v1.0.0.3";
+            Text = "NCMDumpGUI v1.0.1.0";
             DragDrop += WndMain_DragDrop;
             DragEnter += WndMain_DragEnter;
             KeyDown += WndMain_KeyDown;
@@ -176,5 +188,6 @@
         private ToolTip toolTip;
         private ToolStripProgressBar toolStripProgressBar1;
         private LinkLabel linkLabel1;
+        private ComboBox fileFolderComboBox;
     }
 }
