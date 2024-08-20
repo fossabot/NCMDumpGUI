@@ -65,7 +65,7 @@ namespace NCMDumpGUI
                 switch ((SystemMenuItem)m.WParam)
                 {
                     case SystemMenuItem.About:
-                        MessageBox.Show("NCMDumpGUI v1.0.1.0\n基于libncmdump开发\n使用MIT许可证开源", "关于", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show("NCMDumpGUI v1.0.1.1\n基于libncmdump开发\n使用MIT许可证开源", "关于", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         break;
                 }
             }
@@ -211,9 +211,7 @@ namespace NCMDumpGUI
                     int allProcessedFiles = 0;
                     string directoryPath = filepathTextBox.Text;
                     string fileExtension = ".ncm";
-                    string[] files = Directory.GetFiles(directoryPath, "*.*", SearchOption.TopDirectoryOnly)
-                        .Where(file => Path.GetExtension(file).ToLower() == fileExtension.ToLower())
-                        .ToArray();
+                    string[] files = Directory.GetFiles(directoryPath, "*.*", scanMoreFoldersCheckBox.Checked ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly).Where(file => Path.GetExtension(file).ToLower() == fileExtension.ToLower()).ToArray();
 
                     toolStripProgressBar1.Maximum = files.Length;
                     foreach (var file in files)
@@ -303,6 +301,14 @@ namespace NCMDumpGUI
         private void fileFolderComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             filepathTextBox.Text = "";
+            if (fileFolderComboBox.SelectedIndex == 1)
+            {
+                scanMoreFoldersCheckBox.Visible = true;
+            }
+            else
+            {
+                scanMoreFoldersCheckBox.Visible = false;
+            }
         }
     }
 }

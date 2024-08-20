@@ -41,6 +41,7 @@
             toolTip = new ToolTip(components);
             linkLabel1 = new LinkLabel();
             fileFolderComboBox = new ComboBox();
+            scanMoreFoldersCheckBox = new CheckBox();
             statusStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -149,12 +150,24 @@
             fileFolderComboBox.TabIndex = 7;
             fileFolderComboBox.SelectedIndexChanged += fileFolderComboBox_SelectedIndexChanged;
             // 
+            // scanMoreFoldersCheckBox
+            // 
+            scanMoreFoldersCheckBox.AutoSize = true;
+            scanMoreFoldersCheckBox.Location = new Point(260, 78);
+            scanMoreFoldersCheckBox.Name = "scanMoreFoldersCheckBox";
+            scanMoreFoldersCheckBox.Size = new Size(126, 28);
+            scanMoreFoldersCheckBox.TabIndex = 8;
+            scanMoreFoldersCheckBox.Text = "扫描子目录";
+            scanMoreFoldersCheckBox.UseVisualStyleBackColor = true;
+            scanMoreFoldersCheckBox.Visible = false;
+            // 
             // WndMain
             // 
             AllowDrop = true;
             AutoScaleDimensions = new SizeF(11F, 24F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(531, 152);
+            Controls.Add(scanMoreFoldersCheckBox);
             Controls.Add(fileFolderComboBox);
             Controls.Add(linkLabel1);
             Controls.Add(fixMetaDataCheckBox);
@@ -165,7 +178,7 @@
             Controls.Add(label1);
             FormBorderStyle = FormBorderStyle.FixedToolWindow;
             Name = "WndMain";
-            Text = "NCMDumpGUI v1.0.1.0";
+            Text = "NCMDumpGUI v1.0.1.1";
             DragDrop += WndMain_DragDrop;
             DragEnter += WndMain_DragEnter;
             KeyDown += WndMain_KeyDown;
@@ -189,5 +202,6 @@
         private ToolStripProgressBar toolStripProgressBar1;
         private LinkLabel linkLabel1;
         private ComboBox fileFolderComboBox;
+        private CheckBox scanMoreFoldersCheckBox;
     }
 }
