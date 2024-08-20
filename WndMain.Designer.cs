@@ -39,6 +39,7 @@
             toolStripProgressBar1 = new ToolStripProgressBar();
             fixMetaDataCheckBox = new CheckBox();
             toolTip = new ToolTip(components);
+            linkLabel1 = new LinkLabel();
             statusStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -82,23 +83,26 @@
             // 
             statusStrip1.ImageScalingSize = new Size(24, 24);
             statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1, toolStripStatusLabel2, toolStripProgressBar1 });
-            statusStrip1.Location = new Point(0, 119);
+            statusStrip1.LayoutStyle = ToolStripLayoutStyle.HorizontalStackWithOverflow;
+            statusStrip1.Location = new Point(0, 116);
             statusStrip1.Name = "statusStrip1";
-            statusStrip1.Size = new Size(531, 32);
+            statusStrip1.Size = new Size(531, 36);
+            statusStrip1.SizingGrip = false;
             statusStrip1.TabIndex = 4;
             statusStrip1.Text = "statusStrip1";
             // 
             // toolStripStatusLabel1
             // 
+            toolStripStatusLabel1.BorderSides = ToolStripStatusLabelBorderSides.Right;
             toolStripStatusLabel1.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
             toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            toolStripStatusLabel1.Size = new Size(66, 25);
+            toolStripStatusLabel1.Size = new Size(70, 29);
             toolStripStatusLabel1.Text = "状态：";
             // 
             // toolStripStatusLabel2
             // 
             toolStripStatusLabel2.Name = "toolStripStatusLabel2";
-            toolStripStatusLabel2.Size = new Size(100, 25);
+            toolStripStatusLabel2.Size = new Size(100, 29);
             toolStripStatusLabel2.Text = "请提供文件";
             // 
             // toolStripProgressBar1
@@ -107,7 +111,7 @@
             toolStripProgressBar1.MarqueeAnimationSpeed = 1;
             toolStripProgressBar1.Maximum = 5;
             toolStripProgressBar1.Name = "toolStripProgressBar1";
-            toolStripProgressBar1.Size = new Size(100, 24);
+            toolStripProgressBar1.Size = new Size(100, 28);
             toolStripProgressBar1.Step = 5;
             // 
             // fixMetaDataCheckBox
@@ -123,12 +127,24 @@
             fixMetaDataCheckBox.UseVisualStyleBackColor = true;
             fixMetaDataCheckBox.CheckedChanged += fixMetaDataCheckBox_CheckedChanged;
             // 
+            // linkLabel1
+            // 
+            linkLabel1.AutoSize = true;
+            linkLabel1.Location = new Point(437, 9);
+            linkLabel1.Name = "linkLabel1";
+            linkLabel1.Size = new Size(82, 24);
+            linkLabel1.TabIndex = 6;
+            linkLabel1.TabStop = true;
+            linkLabel1.Text = "免责声明";
+            linkLabel1.LinkClicked += linkLabel1_LinkClicked;
+            // 
             // WndMain
             // 
             AllowDrop = true;
             AutoScaleDimensions = new SizeF(11F, 24F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(531, 151);
+            ClientSize = new Size(531, 152);
+            Controls.Add(linkLabel1);
             Controls.Add(fixMetaDataCheckBox);
             Controls.Add(statusStrip1);
             Controls.Add(convertButton);
@@ -137,7 +153,7 @@
             Controls.Add(label1);
             FormBorderStyle = FormBorderStyle.FixedToolWindow;
             Name = "WndMain";
-            Text = "NCMDumpGUI v1.0.0.2";
+            Text = "NCMDumpGUI v1.0.0.3";
             DragDrop += WndMain_DragDrop;
             DragEnter += WndMain_DragEnter;
             KeyDown += WndMain_KeyDown;
@@ -159,5 +175,6 @@
         private CheckBox fixMetaDataCheckBox;
         private ToolTip toolTip;
         private ToolStripProgressBar toolStripProgressBar1;
+        private LinkLabel linkLabel1;
     }
 }

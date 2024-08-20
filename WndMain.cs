@@ -14,6 +14,7 @@ namespace NCMDumpGUI
             InitializeComponent();
             toolTip.SetToolTip(fixMetaDataCheckBox, "将歌曲的详细信息添加到转换后的文件\n注意：不能保证100%正常工作，部分元数据可能无法修复！");
             toolTip.SetToolTip(convertButton, "点击开始转换文件到能被主流播放器识别的格式");
+
         }
 
         // 窗口标题栏右键菜单
@@ -62,7 +63,7 @@ namespace NCMDumpGUI
                 switch ((SystemMenuItem)m.WParam)
                 {
                     case SystemMenuItem.About:
-                        MessageBox.Show("NCMDumpGUI v1.0.0.2\n基于libncmdump开发\n仅供学习使用", "关于", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show("NCMDumpGUI v1.0.0.3\n基于libncmdump开发\n使用MIT许可证开源", "关于", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         break;
                 }
             }
@@ -234,7 +235,12 @@ namespace NCMDumpGUI
             {
                 toolStripProgressBar1.Maximum = 4;
             }
-            
+
+        }
+
+        private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            MessageBox.Show("注意！\n此应用只用于学习用途，禁止用于商业或违法用途，\n请在遵守NCM文件提供平台的服务条款下使用本应用，\n作者对商业或违法使用本软件造成的任何后果不承担任何责任！", "免责声明", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
 }
