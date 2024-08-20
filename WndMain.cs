@@ -16,7 +16,6 @@ namespace NCMDumpGUI
             toolTip.SetToolTip(fixMetaDataCheckBox, "将歌曲的详细信息添加到转换后的文件\n注意：不能保证100%正常工作，部分元数据可能无法修复！");
             toolTip.SetToolTip(convertButton, "点击开始转换文件到能被主流播放器识别的格式");
             fileFolderComboBox.SelectedIndex = 0;
-
         }
 
         // 窗口标题栏右键菜单

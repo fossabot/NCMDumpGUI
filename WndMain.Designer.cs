@@ -50,9 +50,9 @@
             label1.AutoSize = true;
             label1.Location = new Point(12, 9);
             label1.Name = "label1";
-            label1.Size = new Size(352, 24);
+            label1.Size = new Size(296, 24);
             label1.TabIndex = 0;
-            label1.Text = "请输入文件路径（或将文件拖入本窗口）：";
+            label1.Text = "文件&&目录路径（可以直接拖入）：";
             // 
             // filepathTextBox
             // 
@@ -178,7 +178,8 @@
             Controls.Add(label1);
             FormBorderStyle = FormBorderStyle.FixedToolWindow;
             Name = "WndMain";
-            Text = "NCMDumpGUI v1.0.1.1";
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "NCMDumpGUI";
             DragDrop += WndMain_DragDrop;
             DragEnter += WndMain_DragEnter;
             KeyDown += WndMain_KeyDown;
