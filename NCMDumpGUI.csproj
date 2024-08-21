@@ -24,4 +24,8 @@
     <AdditionalFiles Remove="app.manifest" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="DarkNet" Version="2.3.0" />
+  </ItemGroup>
+
 </Project>

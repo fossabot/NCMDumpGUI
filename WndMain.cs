@@ -1,3 +1,4 @@
+using Dark.Net;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -100,7 +101,7 @@ namespace NCMDumpGUI
         // 检查ncm二进制文件
         private bool CheckNCMBinary(string filePath)
         {
-            string correctHeader = "CTENFDAM";
+            string magicHeader = "CTENFDAM";
 
             try
             {
@@ -112,7 +113,7 @@ namespace NCMDumpGUI
                     if (bytesRead == 8)
                     {
                         string header = Encoding.ASCII.GetString(bytes);
-                        if (header == correctHeader)
+                        if (header == magicHeader)
                         {
                             return true;
                         }
@@ -297,15 +298,21 @@ namespace NCMDumpGUI
             MessageBox.Show("注意！\n此应用只用于学习用途，禁止用于商业或违法用途，\n请在遵守NCM文件提供平台的服务条款下使用本应用，\n作者对商业或违法使用本软件造成的任何后果不承担任何责任！", "免责声明", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
+        private string currentFilePath = "";
+        private string currentFolderPath = "";
+
         private void fileFolderComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            filepathTextBox.Text = "";
             if (fileFolderComboBox.SelectedIndex == 1)
             {
+                currentFilePath = filepathTextBox.Text;
+                filepathTextBox.Text = currentFolderPath;
                 scanMoreFoldersCheckBox.Visible = true;
             }
             else
             {
+                currentFolderPath = filepathTextBox.Text;
+                filepathTextBox.Text = currentFilePath;
                 scanMoreFoldersCheckBox.Visible = false;
             }
         }
