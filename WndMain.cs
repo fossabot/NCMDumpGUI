@@ -11,12 +11,34 @@ namespace NCMDumpGUI
     public partial class WndMain : Form
     {
         // 初始化
-        public WndMain()
+        public WndMain(string[] args)
         {
             InitializeComponent();
             toolTip.SetToolTip(fixMetaDataCheckBox, "将歌曲的详细信息添加到转换后的文件\n注意：不能保证100%正常工作，部分元数据可能无法修复！");
             toolTip.SetToolTip(convertButton, "点击开始转换文件到能被主流播放器识别的格式");
-            fileFolderComboBox.SelectedIndex = 0;
+            if (args.Length > 0)
+            {
+                if (args[0] != "")
+                {
+                    if (Directory.Exists(args[0]))
+                    {
+                        fileFolderComboBox.SelectedIndex = 1;
+                    }
+                    else if (File.Exists(args[0]))
+                    {
+                        fileFolderComboBox.SelectedIndex = 0;
+                    }
+                    else
+                    {
+                        toolStripStatusLabel2.Text = "文件不存在";
+                    }
+                    filepathTextBox.Text = args[0];
+                }
+            }
+            else
+            {
+                fileFolderComboBox.SelectedIndex = 0;
+            }
         }
 
         // 窗口标题栏右键菜单
@@ -182,7 +204,7 @@ namespace NCMDumpGUI
         // “转换”按钮被点击
         private void convertButton_Click(object sender, EventArgs e)
         {
-            if (!File.Exists("libncmdump.dll"))
+            if (!File.Exists(GlobalVariables.libncmdumpPath))
             {
                 MessageBox.Show("核心不存在\n请确认libncmdump.dll与本程序在同一目录", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 toolStripStatusLabel2.Text = "核心不存在！请检查libncmdump.dll";
@@ -288,33 +310,51 @@ namespace NCMDumpGUI
             }
         }
 
+        private static bool modifyByDrag = false;
+
         private void WndMain_DragDrop(object sender, DragEventArgs e)
         {
-            filepathTextBox.Text = ((System.Array)e.Data.GetData(DataFormats.FileDrop)).GetValue(0).ToString();
+            string[] filePaths = (string[])e.Data.GetData(DataFormats.FileDrop);
+            if (filePaths.Length >= 1)
+            {
+                string path = filePaths[0];
+                modifyByDrag = true;
+                if (Directory.Exists(path))
+                {
+                    filepathTextBox.Text = path;
+                    fileFolderComboBox.SelectedIndex = 1;
+                }
+                else if (File.Exists(path))
+                {
+                    filepathTextBox.Text = path;
+                    fileFolderComboBox.SelectedIndex = 0;
+                }
+            }
+        }
+
+        private void fileFolderComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (!modifyByDrag)
+            {
+                filepathTextBox.Text = "";
+            }
+            else if(modifyByDrag)
+            {
+                modifyByDrag = false;
+            }
+            if (fileFolderComboBox.SelectedIndex == 1)
+            {
+                scanMoreFoldersCheckBox.Visible = true;
+            }
+            else
+            {
+                scanMoreFoldersCheckBox.Visible = false;
+            }
         }
 
         private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             MessageBox.Show("注意！\n此应用只用于学习用途，禁止用于商业或违法用途，\n请在遵守NCM文件提供平台的服务条款下使用本应用，\n作者对商业或违法使用本软件造成的任何后果不承担任何责任！", "免责声明", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        private string currentFilePath = "";
-        private string currentFolderPath = "";
-
-        private void fileFolderComboBox_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (fileFolderComboBox.SelectedIndex == 1)
-            {
-                currentFilePath = filepathTextBox.Text;
-                filepathTextBox.Text = currentFolderPath;
-                scanMoreFoldersCheckBox.Visible = true;
-            }
-            else
-            {
-                currentFolderPath = filepathTextBox.Text;
-                filepathTextBox.Text = currentFilePath;
-                scanMoreFoldersCheckBox.Visible = false;
-            }
         }
     }
 }

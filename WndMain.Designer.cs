@@ -177,6 +177,8 @@
             Controls.Add(filepathTextBox);
             Controls.Add(label1);
             FormBorderStyle = FormBorderStyle.FixedToolWindow;
+            MaximizeBox = false;
+            MinimizeBox = false;
             Name = "WndMain";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "NCMDumpGUI";
