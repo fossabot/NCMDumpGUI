@@ -144,7 +144,7 @@
             fileFolderComboBox.FlatStyle = FlatStyle.System;
             fileFolderComboBox.FormattingEnabled = true;
             fileFolderComboBox.Items.AddRange(new object[] { "文件", "目录" });
-            fileFolderComboBox.Location = new Point(16, 35);
+            fileFolderComboBox.Location = new Point(16, 36);
             fileFolderComboBox.Name = "fileFolderComboBox";
             fileFolderComboBox.Size = new Size(77, 32);
             fileFolderComboBox.TabIndex = 7;
