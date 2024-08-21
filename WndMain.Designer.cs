@@ -42,6 +42,7 @@
             linkLabel1 = new LinkLabel();
             fileFolderComboBox = new ComboBox();
             scanMoreFoldersCheckBox = new CheckBox();
+            filesizeLabel = new Label();
             statusStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -60,6 +61,7 @@
             filepathTextBox.Name = "filepathTextBox";
             filepathTextBox.Size = new Size(379, 30);
             filepathTextBox.TabIndex = 1;
+            filepathTextBox.TextChanged += filepathTextBox_TextChanged;
             // 
             // browseButton
             // 
@@ -161,12 +163,21 @@
             scanMoreFoldersCheckBox.UseVisualStyleBackColor = true;
             scanMoreFoldersCheckBox.Visible = false;
             // 
+            // filesizeLabel
+            // 
+            filesizeLabel.AutoSize = true;
+            filesizeLabel.Location = new Point(134, 77);
+            filesizeLabel.Name = "filesizeLabel";
+            filesizeLabel.Size = new Size(0, 24);
+            filesizeLabel.TabIndex = 9;
+            // 
             // WndMain
             // 
             AllowDrop = true;
             AutoScaleDimensions = new SizeF(11F, 24F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(531, 152);
+            Controls.Add(filesizeLabel);
             Controls.Add(scanMoreFoldersCheckBox);
             Controls.Add(fileFolderComboBox);
             Controls.Add(linkLabel1);
@@ -206,5 +217,6 @@
         private LinkLabel linkLabel1;
         private ComboBox fileFolderComboBox;
         private CheckBox scanMoreFoldersCheckBox;
+        private Label filesizeLabel;
     }
 }

@@ -120,6 +120,65 @@ namespace NCMDumpGUI
             }
         }
 
+        public class FileFolderSizeRetriever
+        {
+            public static string GetSizeAsString(string path, bool includeSubdirectories)
+            {
+                long fileSizeBytes = 0; // 初始化变量
+                if (File.Exists(path))
+                {
+                    FileInfo fileInfo = new FileInfo(path);
+                    fileSizeBytes = fileInfo.Length;
+                }
+                else if (Directory.Exists(path))
+                {
+                    DirectoryInfo directory = new DirectoryInfo(path);
+                    FileInfo[] files = directory.GetFiles("*.ncm", includeSubdirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+
+                    foreach (FileInfo file in files)
+                    {
+                        fileSizeBytes += file.Length;
+                    }
+                }
+                else
+                {
+                    return "路径不存在";
+                }
+
+                const long oneKb = 1024;
+                const long oneMb = oneKb * 1024;
+
+                if (fileSizeBytes < oneKb)
+                {
+                    return $"{fileSizeBytes} 字节";
+                }
+                else if (fileSizeBytes < oneMb)
+                {
+                    return $"{fileSizeBytes / oneKb} KiB";
+                }
+                else
+                {
+                    return $"{fileSizeBytes / oneMb} MiB";
+                }
+            }
+
+            private static long GetDirectorySize(DirectoryInfo directory)
+            {
+                long totalSize = 0;
+                FileInfo[] fileInfos = directory.GetFiles();
+                foreach (FileInfo fileInfo in fileInfos)
+                {
+                    totalSize += fileInfo.Length;
+                }
+                DirectoryInfo[] subDirectories = directory.GetDirectories();
+                foreach (DirectoryInfo subDirectory in subDirectories)
+                {
+                    totalSize += GetDirectorySize(subDirectory);
+                }
+                return totalSize;
+            }
+        }
+
         // 检查ncm二进制文件
         private bool CheckNCMBinary(string filePath)
         {
@@ -204,6 +263,7 @@ namespace NCMDumpGUI
         // “转换”按钮被点击
         private void convertButton_Click(object sender, EventArgs e)
         {
+            filesizeLabel.Text = FileFolderSizeRetriever.GetSizeAsString(filepathTextBox.Text, scanMoreFoldersCheckBox.Checked);
             if (!File.Exists(GlobalVariables.libncmdumpPath))
             {
                 MessageBox.Show("核心不存在\n请确认libncmdump.dll与本程序在同一目录", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -234,7 +294,8 @@ namespace NCMDumpGUI
                     string directoryPath = filepathTextBox.Text;
                     string fileExtension = ".ncm";
                     string[] files = Directory.GetFiles(directoryPath, "*.*", scanMoreFoldersCheckBox.Checked ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly).Where(file => Path.GetExtension(file).ToLower() == fileExtension.ToLower()).ToArray();
-
+                    int fileCount = Directory.GetFiles(directoryPath).Length;
+                    int unprocessFiles = fileCount - files.Length;
                     toolStripProgressBar1.Maximum = files.Length;
                     foreach (var file in files)
                     {
@@ -254,11 +315,11 @@ namespace NCMDumpGUI
                         toolStripProgressBar1.Value = allProcessedFiles;
                         toolStripStatusLabel2.Text = "已处理：" + allProcessedFiles.ToString();
                     }
-                    toolStripStatusLabel2.Text = "成功：" + processedFiles.ToString() + "；失败：" + bypassFiles.ToString();
+                    toolStripStatusLabel2.Text = "成功：" + processedFiles.ToString() + "；失败：" + bypassFiles.ToString() + "；跳过：" + unprocessFiles.ToString();
                 }
                 else if (fileFolderComboBox.SelectedIndex == 0)
                 {
-                    toolStripProgressBar1.Maximum = 1;
+                    toolStripProgressBar1.Maximum = 2;
                     if (!filepathTextBox.Text.EndsWith(".ncm"))
                     {
                         MessageBox.Show("这似乎并不是ncm文件！\n请提供ncm文件", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -338,7 +399,7 @@ namespace NCMDumpGUI
             {
                 filepathTextBox.Text = "";
             }
-            else if(modifyByDrag)
+            else if (modifyByDrag)
             {
                 modifyByDrag = false;
             }
@@ -355,6 +416,11 @@ namespace NCMDumpGUI
         private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             MessageBox.Show("注意！\n此应用只用于学习用途，禁止用于商业或违法用途，\n请在遵守NCM文件提供平台的服务条款下使用本应用，\n作者对商业或违法使用本软件造成的任何后果不承担任何责任！", "免责声明", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void filepathTextBox_TextChanged(object sender, EventArgs e)
+        {
+            filesizeLabel.Text = "";
         }
     }
 }
