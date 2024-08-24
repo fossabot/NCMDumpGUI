@@ -44,13 +44,18 @@
             scanMoreFoldersCheckBox = new CheckBox();
             filesizeLabel = new Label();
             playGroupBox = new GroupBox();
+            playMoreButton = new Button();
             audioProgressLabel = new Label();
             playResumeButton = new Button();
             audioProgressTrackBar = new TrackBar();
+            playMoreBtnContextMenuStrip = new ContextMenuStrip(components);
+            openWithDefaultPlayerToolStripMenuItem = new ToolStripMenuItem();
+            openFileLocationToolStripMenuItem = new ToolStripMenuItem();
             timerTrackBar = new System.Windows.Forms.Timer(components);
             statusStrip1.SuspendLayout();
             playGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)audioProgressTrackBar).BeginInit();
+            playMoreBtnContextMenuStrip.SuspendLayout();
             SuspendLayout();
             // 
             // label1
@@ -180,6 +185,7 @@
             // 
             // playGroupBox
             // 
+            playGroupBox.Controls.Add(playMoreButton);
             playGroupBox.Controls.Add(audioProgressLabel);
             playGroupBox.Controls.Add(playResumeButton);
             playGroupBox.Controls.Add(audioProgressTrackBar);
@@ -190,6 +196,19 @@
             playGroupBox.TabIndex = 10;
             playGroupBox.TabStop = false;
             playGroupBox.Text = "播放";
+            // 
+            // playMoreButton
+            // 
+            playMoreButton.Cursor = Cursors.Hand;
+            playMoreButton.Font = new Font("Microsoft YaHei UI", 6F);
+            playMoreButton.Location = new Point(6, 72);
+            playMoreButton.Name = "playMoreButton";
+            playMoreButton.Size = new Size(40, 26);
+            playMoreButton.TabIndex = 3;
+            playMoreButton.Text = "…";
+            playMoreButton.TextAlign = ContentAlignment.TopCenter;
+            playMoreButton.UseVisualStyleBackColor = true;
+            playMoreButton.Click += playMoreButton_Click;
             // 
             // audioProgressLabel
             // 
@@ -206,7 +225,7 @@
             // 
             playResumeButton.Location = new Point(6, 29);
             playResumeButton.Name = "playResumeButton";
-            playResumeButton.Size = new Size(40, 69);
+            playResumeButton.Size = new Size(40, 44);
             playResumeButton.TabIndex = 1;
             playResumeButton.Text = "▶️";
             playResumeButton.UseVisualStyleBackColor = true;
@@ -220,6 +239,27 @@
             audioProgressTrackBar.TabIndex = 0;
             audioProgressTrackBar.TickStyle = TickStyle.Both;
             audioProgressTrackBar.Scroll += audioProgressTrackBar_Scroll;
+            // 
+            // playMoreBtnContextMenuStrip
+            // 
+            playMoreBtnContextMenuStrip.ImageScalingSize = new Size(24, 24);
+            playMoreBtnContextMenuStrip.Items.AddRange(new ToolStripItem[] { openWithDefaultPlayerToolStripMenuItem, openFileLocationToolStripMenuItem });
+            playMoreBtnContextMenuStrip.Name = "playBtnContextMenuStrip";
+            playMoreBtnContextMenuStrip.Size = new Size(261, 64);
+            // 
+            // openWithDefaultPlayerToolStripMenuItem
+            // 
+            openWithDefaultPlayerToolStripMenuItem.Name = "openWithDefaultPlayerToolStripMenuItem";
+            openWithDefaultPlayerToolStripMenuItem.Size = new Size(260, 30);
+            openWithDefaultPlayerToolStripMenuItem.Text = "用系统默认播放器打开";
+            openWithDefaultPlayerToolStripMenuItem.Click += openWithDefaultPlayerToolStripMenuItem_Click;
+            // 
+            // openFileLocationToolStripMenuItem
+            // 
+            openFileLocationToolStripMenuItem.Name = "openFileLocationToolStripMenuItem";
+            openFileLocationToolStripMenuItem.Size = new Size(260, 30);
+            openFileLocationToolStripMenuItem.Text = "打开文件所在位置";
+            openFileLocationToolStripMenuItem.Click += openFileLocationToolStripMenuItem_Click;
             // 
             // timerTrackBar
             // 
@@ -257,6 +297,7 @@
             playGroupBox.ResumeLayout(false);
             playGroupBox.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)audioProgressTrackBar).EndInit();
+            playMoreBtnContextMenuStrip.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -282,5 +323,9 @@
         private TrackBar audioProgressTrackBar;
         private Label audioProgressLabel;
         private System.Windows.Forms.Timer timerTrackBar;
+        private ContextMenuStrip playMoreBtnContextMenuStrip;
+        private ToolStripMenuItem openWithDefaultPlayerToolStripMenuItem;
+        private ToolStripMenuItem openFileLocationToolStripMenuItem;
+        private Button playMoreButton;
     }
 }

@@ -96,7 +96,7 @@ namespace NCMDumpGUI
                     case SystemMenuItem.About:
                         TaskDialog.ShowDialog(this, new TaskDialogPage()
                         {
-                            Text = "版本：v1.0.2.0\n基于libncmdump开发\n使用MIT许可证开源\n其他依赖：\n    · Costura.Fody\n    · NAudio\n当前.NET版本：" + Environment.Version.ToString(),
+                            Text = "版本：v1.0.2.1\n基于libncmdump开发\n使用MIT许可证开源\n其他依赖：\n    · Costura.Fody\n    · NAudio\n当前.NET版本：" + Environment.Version.ToString(),
                             Heading = "NCMDumpGUI",
                             Caption = "关于",
                             Buttons =
@@ -657,6 +657,21 @@ namespace NCMDumpGUI
         private void WndMain_FormClosed(object sender, FormClosedEventArgs e)
         {
             Stop();
+        }
+
+        private void openWithDefaultPlayerToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Process.Start("explorer", resultAudioPath);
+        }
+
+        private void openFileLocationToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Process.Start("explorer", $"/select,\"{resultAudioPath}\"");
+        }
+
+        private void playMoreButton_Click(object sender, EventArgs e)
+        {
+            playMoreBtnContextMenuStrip.Show(playMoreButton, new Point(0, playMoreButton.Height));
         }
     }
 }

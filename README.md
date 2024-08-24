@@ -1,7 +1,9 @@
 # NCMDumpGUI
 
 > [!CAUTION]
-> 此应用只用于学习用途，禁止用于商业或违法用途，请在遵守NCM文件提供平台的服务条款下使用本应用，作者对商业或违法使用本软件造成的任何后果不承担任何责任！
+> 此应用只用于学习用途，下载后请在24小时内删除，禁止用于商业或违法用途！请在遵守 NCM 文件提供平台的服务条款下使用本应用，作者对商业或违法使用本软件造成的任何后果不承担任何责任！
+>
+> 使用本软件转换的音频请在不侵犯著作权的前提下使用。如需商业，请从平台或版权所有人购买对应歌曲
 
 这是一个简单程序，使用到了 `ncmdump` 项目实现 ncm 解密功能
 
@@ -33,6 +35,7 @@
 - [x] 基本用户界面
 - [x] 异常处理
 - [x] 批量处理
+- [x] 播放
 - [ ] 窗口置顶
 - [ ] 支持使用 `ncmdump.exe`
 - [ ] 更详细的状态信息
@@ -41,8 +44,17 @@
 
 ## 截图
 
+_截图来自 `v1.0.1.2`_
+
 ![在 Windows 11 上运行](/screenshots/Windows11.png)
 ![在 Windows 7 上运行](/screenshots/Windows7.png)
+
+## 依赖
+
+- [ncmdump](https://github.com/taurusxin/ncmdump)（MIT 许可证）
+	+ [taglib](https://github.com/taglib/taglib)（LGPL 2.1、MPL 1.1 许可证）
+- [NAudio](https://github.com/naudio/NAudio)（MIT 许可证）
+- [Costura.Fody](https://github.com/Fody/Costura)（MIT 许可证）
 
 ## 鸣谢
 
