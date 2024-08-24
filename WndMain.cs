@@ -1,21 +1,22 @@
-using Dark.Net;
-using System;
+ï»¿using System;
 using System.Diagnostics;
+using System.Reflection.PortableExecutable;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using NAudio.Wave;
 
 namespace NCMDumpGUI
 {
     public partial class WndMain : Form
     {
-        // ³õÊ¼»¯
+        // çª—å£åˆå§‹åŒ–
         public WndMain(string[] args)
         {
             InitializeComponent();
-            toolTip.SetToolTip(fixMetaDataCheckBox, "½«¸èÇúµÄÏêÏ¸ĞÅÏ¢Ìí¼Óµ½×ª»»ºóµÄÎÄ¼ş\n×¢Òâ£º²»ÄÜ±£Ö¤100%Õı³£¹¤×÷£¬²¿·ÖÔªÊı¾İ¿ÉÄÜÎŞ·¨ĞŞ¸´£¡");
-            toolTip.SetToolTip(convertButton, "µã»÷¿ªÊ¼×ª»»ÎÄ¼şµ½ÄÜ±»Ö÷Á÷²¥·ÅÆ÷Ê¶±ğµÄ¸ñÊ½");
+            toolTip.SetToolTip(fixMetaDataCheckBox, "å°†æ­Œæ›²çš„è¯¦ç»†ä¿¡æ¯æ·»åŠ åˆ°è½¬æ¢åçš„æ–‡ä»¶\næ³¨æ„ï¼šä¸èƒ½ä¿è¯100%æ­£å¸¸å·¥ä½œï¼Œéƒ¨åˆ†å…ƒæ•°æ®å¯èƒ½æ— æ³•ä¿®å¤ï¼");
+            toolTip.SetToolTip(convertButton, "ç‚¹å‡»å¼€å§‹è½¬æ¢æ–‡ä»¶åˆ°èƒ½è¢«ä¸»æµæ’­æ”¾å™¨è¯†åˆ«çš„æ ¼å¼");
             if (args.Length > 0)
             {
                 if (args[0] != "")
@@ -30,7 +31,7 @@ namespace NCMDumpGUI
                     }
                     else
                     {
-                        toolStripStatusLabel2.Text = "ÎÄ¼ş²»´æÔÚ";
+                        toolStripStatusLabel2.Text = "æ–‡ä»¶ä¸å­˜åœ¨";
                     }
                     filepathTextBox.Text = args[0];
                 }
@@ -41,7 +42,13 @@ namespace NCMDumpGUI
             }
         }
 
-        // ´°¿Ú±êÌâÀ¸ÓÒ¼ü²Ëµ¥
+        // å˜é‡åˆå§‹åŒ–
+        private AudioFileReader audioFileReader;
+        private WaveOutEvent outputDevice;
+        private bool isPlaying = false;
+        private string resultAudioPath = "";
+
+        // çª—å£æ ‡é¢˜æ å³é”®èœå•
         #region fields
         private const int WM_SYSCOMMAND = 0X112;
         private const int MF_STRING = 0X0;
@@ -73,7 +80,7 @@ namespace NCMDumpGUI
             base.OnHandleCreated(e);
             var hSysMenu = GetSystemMenu(this.Handle, false);
             AppendMenu(hSysMenu, MF_SEPARATOR, 0, String.Empty);
-            AppendMenu(hSysMenu, MF_STRING, (int)SystemMenuItem.About, "¹ØÓÚ");
+            AppendMenu(hSysMenu, MF_STRING, (int)SystemMenuItem.About, "å…³äº");
         }
         #endregion
 
@@ -89,9 +96,9 @@ namespace NCMDumpGUI
                     case SystemMenuItem.About:
                         TaskDialog.ShowDialog(this, new TaskDialogPage()
                         {
-                            Text = "°æ±¾£ºv1.0.1.3\n»ùÓÚlibncmdump¿ª·¢\nÊ¹ÓÃMITĞí¿ÉÖ¤¿ªÔ´",
+                            Text = "ç‰ˆæœ¬ï¼šv1.0.2.0\nåŸºäºlibncmdumpå¼€å‘\nä½¿ç”¨MITè®¸å¯è¯å¼€æº\nå…¶ä»–ä¾èµ–ï¼š\n    Â· Costura.Fody\n    Â· NAudio\nå½“å‰.NETç‰ˆæœ¬ï¼š" + Environment.Version.ToString(),
                             Heading = "NCMDumpGUI",
-                            Caption = "¹ØÓÚ",
+                            Caption = "å…³äº",
                             Buttons =
                             {
                                 TaskDialogButton.OK
@@ -105,13 +112,13 @@ namespace NCMDumpGUI
         }
         #endregion
 
-        // ¡°ä¯ÀÀ¡±°´Å¥±»µã»÷
+        // â€œæµè§ˆâ€æŒ‰é’®è¢«ç‚¹å‡»
         private void browseButton_Click(object sender, EventArgs e)
         {
             if (fileFolderComboBox.SelectedIndex == 0)
             {
                 OpenFileDialog dialog = new OpenFileDialog();
-                dialog.Filter = "NCM¼ÓÃÜ¸èÇú|*.ncm";
+                dialog.Filter = "NCMåŠ å¯†æ­Œæ›²|*.ncm";
                 DialogResult result = dialog.ShowDialog();
                 if (result == DialogResult.OK)
                 {
@@ -135,7 +142,7 @@ namespace NCMDumpGUI
         {
             public static string GetSizeAsString(string path, bool includeSubdirectories)
             {
-                long fileSizeBytes = 0; // ³õÊ¼»¯±äÁ¿
+                long fileSizeBytes = 0; // åˆå§‹åŒ–å˜é‡
                 if (File.Exists(path))
                 {
                     FileInfo fileInfo = new FileInfo(path);
@@ -153,7 +160,7 @@ namespace NCMDumpGUI
                 }
                 else
                 {
-                    return "Â·¾¶²»´æÔÚ";
+                    return "è·¯å¾„ä¸å­˜åœ¨";
                 }
 
                 const long oneKb = 1024;
@@ -161,7 +168,7 @@ namespace NCMDumpGUI
 
                 if (fileSizeBytes < oneKb)
                 {
-                    return $"{fileSizeBytes} ×Ö½Ú";
+                    return $"{fileSizeBytes} å­—èŠ‚";
                 }
                 else if (fileSizeBytes < oneMb)
                 {
@@ -190,7 +197,7 @@ namespace NCMDumpGUI
             }
         }
 
-        // ¼ì²éncm¶ş½øÖÆÎÄ¼ş
+        // æ£€æŸ¥ncmäºŒè¿›åˆ¶æ–‡ä»¶
         private bool CheckNCMBinary(string filePath)
         {
             string magicHeader = "CTENFDAM";
@@ -215,9 +222,9 @@ namespace NCMDumpGUI
                             {
                                 TaskDialog.ShowDialog(this, new TaskDialogPage()
                                 {
-                                    Text = "ÎÄ¼şÍ·Îª£º" + header,
-                                    Heading = "²»ÊÇncmÎÄ¼ş",
-                                    Caption = "´íÎó",
+                                    Text = "æ–‡ä»¶å¤´ä¸ºï¼š" + header,
+                                    Heading = "ä¸æ˜¯ncmæ–‡ä»¶",
+                                    Caption = "é”™è¯¯",
                                     Buttons =
                                     {
                                         TaskDialogButton.OK
@@ -225,7 +232,7 @@ namespace NCMDumpGUI
                                     Icon = TaskDialogIcon.Error,
                                     DefaultButton = TaskDialogButton.OK
                                 });
-                                toolStripStatusLabel2.Text = "²»ÊÇncmÎÄ¼ş£¡";
+                                toolStripStatusLabel2.Text = "ä¸æ˜¯ncmæ–‡ä»¶ï¼";
                             }
                             return false;
                         }
@@ -236,9 +243,9 @@ namespace NCMDumpGUI
                         {
                             TaskDialog.ShowDialog(this, new TaskDialogPage()
                             {
-                                Text = "²»ÊÇncmÎÄ¼ş",
-                                Heading = "ÎÄ¼ş´óĞ¡Òì³£",
-                                Caption = "´íÎó",
+                                Text = "ä¸æ˜¯ncmæ–‡ä»¶",
+                                Heading = "æ–‡ä»¶å¤§å°å¼‚å¸¸",
+                                Caption = "é”™è¯¯",
                                 Buttons =
                                     {
                                         TaskDialogButton.OK
@@ -246,7 +253,7 @@ namespace NCMDumpGUI
                                 Icon = TaskDialogIcon.Error,
                                 DefaultButton = TaskDialogButton.OK
                             });
-                            toolStripStatusLabel2.Text = "ÎÄ¼ş´óĞ¡Òì³££¬²¢²»ÊÇncmÎÄ¼ş";
+                            toolStripStatusLabel2.Text = "æ–‡ä»¶å¤§å°å¼‚å¸¸ï¼Œå¹¶ä¸æ˜¯ncmæ–‡ä»¶";
                         }
                         return false;
                     }
@@ -258,9 +265,9 @@ namespace NCMDumpGUI
                 {
                     TaskDialog.ShowDialog(this, new TaskDialogPage()
                     {
-                        Text = "ÏêÏ¸ĞÅÏ¢£º" + ex.Message,
-                        Heading = "·¢Éú´íÎó",
-                        Caption = "´íÎó",
+                        Text = "è¯¦ç»†ä¿¡æ¯ï¼š" + ex.Message,
+                        Heading = "å‘ç”Ÿé”™è¯¯",
+                        Caption = "é”™è¯¯",
                         Buttons =
                                     {
                                         TaskDialogButton.OK
@@ -268,13 +275,13 @@ namespace NCMDumpGUI
                         Icon = TaskDialogIcon.Error,
                         DefaultButton = TaskDialogButton.OK
                     });
-                    toolStripStatusLabel2.Text = "ÔØÈëÎÄ¼şÊ±·¢Éú´íÎó";
+                    toolStripStatusLabel2.Text = "è½½å…¥æ–‡ä»¶æ—¶å‘ç”Ÿé”™è¯¯";
                 }
                 return false;
             }
         }
 
-        // ¼ì²éÂ·¾¶ºÏ·¨ĞÔ
+        // æ£€æŸ¥è·¯å¾„åˆæ³•æ€§
         public static bool IsValidFilePath(string path)
         {
             if (Path.GetInvalidPathChars().Any(c => path.Contains(c)))
@@ -304,17 +311,19 @@ namespace NCMDumpGUI
             return result;
         }
 
-        // ¡°×ª»»¡±°´Å¥±»µã»÷
+        // â€œè½¬æ¢â€æŒ‰é’®è¢«ç‚¹å‡»
         private void convertButton_Click(object sender, EventArgs e)
         {
+            Stop();
+            playGroupBox.Enabled = false;
             filesizeLabel.Text = FileFolderSizeRetriever.GetSizeAsString(filepathTextBox.Text, scanMoreFoldersCheckBox.Checked);
             if (!File.Exists(GlobalVariables.libncmdumpPath))
             {
                 TaskDialogButton result = TaskDialog.ShowDialog(this, new TaskDialogPage()
                 {
-                    Text = "ÇëÈ·ÈÏlibncmdump.dllÓë±¾³ÌĞòÔÚÍ¬Ò»Ä¿Â¼",
-                    Heading = "ºËĞÄ²»´æÔÚ",
-                    Caption = "´íÎó",
+                    Text = "è¯·ç¡®è®¤libncmdump.dllä¸æœ¬ç¨‹åºåœ¨åŒä¸€ç›®å½•",
+                    Heading = "æ ¸å¿ƒä¸å­˜åœ¨",
+                    Caption = "é”™è¯¯",
                     Buttons =
                 {
                     TaskDialogButton.Retry,
@@ -327,15 +336,15 @@ namespace NCMDumpGUI
                 {
                     convertButton.PerformClick();
                 }
-                toolStripStatusLabel2.Text = "ºËĞÄ²»´æÔÚ£¡Çë¼ì²élibncmdump.dll";
+                toolStripStatusLabel2.Text = "æ ¸å¿ƒä¸å­˜åœ¨ï¼è¯·æ£€æŸ¥libncmdump.dll";
             }
             else if (filepathTextBox.Text == "")
             {
                 TaskDialog.ShowDialog(this, new TaskDialogPage()
                 {
-                    Text = "ÇëÌá¹©ncmÎÄ¼şÂ·¾¶",
-                    Heading = "ÎÄ¼şÂ·¾¶Îª¿Õ£¡",
-                    Caption = "´íÎó",
+                    Text = "è¯·æä¾›ncmæ–‡ä»¶è·¯å¾„",
+                    Heading = "æ–‡ä»¶è·¯å¾„ä¸ºç©ºï¼",
+                    Caption = "é”™è¯¯",
                     Buttons =
                 {
                     TaskDialogButton.OK
@@ -343,15 +352,15 @@ namespace NCMDumpGUI
                     Icon = TaskDialogIcon.Error,
                     DefaultButton = TaskDialogButton.OK
                 });
-                toolStripStatusLabel2.Text = "ÇëÌá¹©ÎÄ¼ş";
+                toolStripStatusLabel2.Text = "è¯·æä¾›æ–‡ä»¶";
             }
             else if (!IsValidFilePath(filepathTextBox.Text))
             {
                 TaskDialog.ShowDialog(this, new TaskDialogPage()
                 {
-                    Text = "ÎÄ¼şÂ·¾¶ÖĞ°üº¬·Ç·¨×Ö·û£¡",
-                    Heading = "·Ç·¨ÎÄ¼şÂ·¾¶",
-                    Caption = "´íÎó",
+                    Text = "æ–‡ä»¶è·¯å¾„ä¸­åŒ…å«éæ³•å­—ç¬¦ï¼",
+                    Heading = "éæ³•æ–‡ä»¶è·¯å¾„",
+                    Caption = "é”™è¯¯",
                     Buttons =
                 {
                     TaskDialogButton.OK
@@ -359,7 +368,7 @@ namespace NCMDumpGUI
                     Icon = TaskDialogIcon.Error,
                     DefaultButton = TaskDialogButton.OK
                 });
-                toolStripStatusLabel2.Text = "·Ç·¨ÎÄ¼şÂ·¾¶";
+                toolStripStatusLabel2.Text = "éæ³•æ–‡ä»¶è·¯å¾„";
             }
             else
             {
@@ -394,9 +403,9 @@ namespace NCMDumpGUI
                         }
                         allProcessedFiles += 1;
                         toolStripProgressBar1.Value = allProcessedFiles;
-                        toolStripStatusLabel2.Text = "ÒÑ´¦Àí£º" + allProcessedFiles.ToString();
+                        toolStripStatusLabel2.Text = "å·²å¤„ç†ï¼š" + allProcessedFiles.ToString();
                     }
-                    toolStripStatusLabel2.Text = "³É¹¦£º" + processedFiles.ToString() + "£»Ê§°Ü£º" + bypassFiles.ToString() + "£»Ìø¹ı£º" + unprocessFiles.ToString();
+                    toolStripStatusLabel2.Text = "æˆåŠŸï¼š" + processedFiles.ToString() + "ï¼›å¤±è´¥ï¼š" + bypassFiles.ToString() + "ï¼›è·³è¿‡ï¼š" + unprocessFiles.ToString();
                 }
                 else if (fileFolderComboBox.SelectedIndex == 0)
                 {
@@ -405,9 +414,9 @@ namespace NCMDumpGUI
                     {
                         TaskDialog.ShowDialog(this, new TaskDialogPage()
                         {
-                            Text = "ÇëÌá¹©ncmÎÄ¼şÂ·¾¶",
-                            Heading = "ÎÄ¼şÂ·¾¶Îª¿Õ£¡",
-                            Caption = "´íÎó",
+                            Text = "è¯·æä¾›ncmæ–‡ä»¶è·¯å¾„",
+                            Heading = "æ–‡ä»¶è·¯å¾„ä¸ºç©ºï¼",
+                            Caption = "é”™è¯¯",
                             Buttons =
                             {
                                 TaskDialogButton.OK
@@ -415,7 +424,7 @@ namespace NCMDumpGUI
                             Icon = TaskDialogIcon.Error,
                             DefaultButton = TaskDialogButton.OK
                         });
-                        toolStripStatusLabel2.Text = "ÇëÌá¹©ÕıÈ·µÄncmÎÄ¼ş";
+                        toolStripStatusLabel2.Text = "è¯·æä¾›æ­£ç¡®çš„ncmæ–‡ä»¶";
                     }
                     else if (CheckNCMBinary(filepathTextBox.Text))
                     {
@@ -423,12 +432,29 @@ namespace NCMDumpGUI
                         toolStripProgressBar1.Value += 1;
                         if (result != 0)
                         {
-                            toolStripStatusLabel2.Text = "·¢Éú´íÎó£¬·µ»ØÖµÎª£º" + result.ToString();
+                            toolStripStatusLabel2.Text = "å‘ç”Ÿé”™è¯¯ï¼Œè¿”å›å€¼ä¸ºï¼š" + result.ToString();
                         }
                         else
                         {
-                            toolStripStatusLabel2.Text = "×ª»»Íê³É£¡ÎÄ¼şÔÚncm¸èÇúÍ¬¼¶Ä¿Â¼ÏÂ";
+                            resultAudioPath = Path.ChangeExtension(filepathTextBox.Text, ".flac");
+                            if (!Path.Exists(resultAudioPath))
+                            {
+                                resultAudioPath = Path.ChangeExtension(filepathTextBox.Text, ".mp3");
+                            }
+
+                            string displayFileName = "";
+                            if (Path.GetFileName(resultAudioPath).Length >= 10)
+                            {
+                                displayFileName = Path.GetFileName(resultAudioPath).Split(".")[0].Substring(0, 10) + "..." + Path.GetExtension(resultAudioPath);
+                            }
+                            else
+                            {
+                                displayFileName = Path.GetFileName(resultAudioPath);
+                            }
+
+                            toolStripStatusLabel2.Text = "å®Œæˆï¼æ–‡ä»¶åï¼š" + displayFileName;
                             toolStripProgressBar1.Value += 1;
+                            playGroupBox.Enabled = true;
                         }
                     }
                 }
@@ -441,7 +467,7 @@ namespace NCMDumpGUI
             }
         }
 
-        // ´°¿Ú¼üÅÌÊÂ¼ş
+        // çª—å£é”®ç›˜äº‹ä»¶
         public void WndMain_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
@@ -450,7 +476,7 @@ namespace NCMDumpGUI
             }
         }
 
-        // ÎÄ¼şÍÏÈë
+        // æ–‡ä»¶æ‹–å…¥
         private void WndMain_DragEnter(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
@@ -468,7 +494,7 @@ namespace NCMDumpGUI
         private void WndMain_DragDrop(object sender, DragEventArgs e)
         {
             string[] filePaths = (string[])e.Data.GetData(DataFormats.FileDrop);
-            if (filePaths.Length >= 1)
+            if (filePaths.Length >= 1 && convertButton.Enabled == true)
             {
                 string path = filePaths[0];
                 modifyByDrag = true;
@@ -509,9 +535,9 @@ namespace NCMDumpGUI
         {
             TaskDialog.ShowDialog(this, new TaskDialogPage()
             {
-                Text = "´ËÓ¦ÓÃÖ»ÓÃÓÚÑ§Ï°ÓÃÍ¾£¬½ûÖ¹ÓÃÓÚÉÌÒµ»òÎ¥·¨ÓÃÍ¾£¬\nÇëÔÚ×ñÊØNCMÎÄ¼şÌá¹©Æ½Ì¨µÄ·şÎñÌõ¿îÏÂÊ¹ÓÃ±¾Ó¦ÓÃ£¬\n×÷Õß¶ÔÉÌÒµ»òÎ¥·¨Ê¹ÓÃ±¾Èí¼şÔì³ÉµÄÈÎºÎºó¹û²»³Ğµ£ÈÎºÎÔğÈÎ£¡",
-                Heading = "×¢Òâ£¡",
-                Caption = "ÃâÔğÉùÃ÷",
+                Text = "æ­¤åº”ç”¨åªç”¨äºå­¦ä¹ ç”¨é€”ï¼Œç¦æ­¢ç”¨äºå•†ä¸šæˆ–è¿æ³•ç”¨é€”ï¼Œ\nè¯·åœ¨éµå®ˆNCMæ–‡ä»¶æä¾›å¹³å°çš„æœåŠ¡æ¡æ¬¾ä¸‹ä½¿ç”¨æœ¬åº”ç”¨ï¼Œ\nä½œè€…å¯¹å•†ä¸šæˆ–è¿æ³•ä½¿ç”¨æœ¬è½¯ä»¶é€ æˆçš„ä»»ä½•åæœä¸æ‰¿æ‹…ä»»ä½•è´£ä»»ï¼",
+                Heading = "æ³¨æ„ï¼",
+                Caption = "å…è´£å£°æ˜",
                 Buttons =
                 {
                     TaskDialogButton.OK
@@ -524,6 +550,113 @@ namespace NCMDumpGUI
         private void filepathTextBox_TextChanged(object sender, EventArgs e)
         {
             filesizeLabel.Text = "";
+            playGroupBox.Enabled = false;
+            if (isPlaying)
+            {
+                Stop();
+            }
+        }
+
+        private void UpdateProgress()
+        {
+            if (audioFileReader != null)
+            {
+                int currentPos = (int)(audioFileReader.CurrentTime.TotalSeconds);
+                int totalLength = (int)(audioFileReader.TotalTime.TotalSeconds);
+
+                audioProgressTrackBar.Maximum = totalLength;
+                audioProgressTrackBar.Value = currentPos;
+
+                audioProgressLabel.Text = $"{(currentPos / 60).ToString("00")}:{(currentPos % 60).ToString("00")} / {(totalLength / 60).ToString("00")}:{(totalLength % 60).ToString("00")}";
+
+                if (isPlaying)
+                {
+                    timerTrackBar.Start();
+                }
+                else
+                {
+                    timerTrackBar.Stop();
+                }
+            }
+        }
+
+        private void Play()
+        {
+            if (audioFileReader == null)
+            {
+                audioFileReader = new AudioFileReader(resultAudioPath);
+                outputDevice = new WaveOutEvent();
+                outputDevice.Init(audioFileReader);
+            }
+
+            if (outputDevice.PlaybackState != PlaybackState.Playing)
+            {
+                outputDevice.Play();
+                isPlaying = true;
+                playResumeButton.Text = "â¸ï¸";
+                UpdateProgress();
+            }
+        }
+
+        private void OnPlaybackStopped(object sender, StoppedEventArgs e)
+        {
+            Stop();
+        }
+
+        private void Pause()
+        {
+            if (outputDevice != null)
+            {
+                outputDevice.Pause();
+            }
+            isPlaying = false;
+            playResumeButton.Text = "â–¶ï¸";
+        }
+
+        private void Stop()
+        {
+            if (outputDevice != null)
+            {
+                outputDevice.Stop();
+                outputDevice.Dispose();
+                audioFileReader.Dispose();
+                audioFileReader = null;
+                outputDevice = null;
+            }
+            isPlaying = false;
+            playResumeButton.Text = "â–¶ï¸";
+            audioProgressTrackBar.Value = 0;
+            audioProgressLabel.Text = "00:00 / 00:00";
+        }
+
+        private void timerTrackBar_Tick(object sender, EventArgs e)
+        {
+            UpdateProgress();
+        }
+
+        private void audioProgressTrackBar_Scroll(object sender, EventArgs e)
+        {
+            if (audioFileReader != null && isPlaying)
+            {
+                audioFileReader.CurrentTime = TimeSpan.FromSeconds(audioProgressTrackBar.Value);
+            }
+        }
+
+        private void playResumeButton_Click(object sender, EventArgs e)
+        {
+            if (isPlaying)
+            {
+                Pause();
+            }
+            else
+            {
+                Play();
+            }
+        }
+
+        private void WndMain_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            Stop();
         }
     }
 }

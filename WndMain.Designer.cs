@@ -43,7 +43,14 @@
             fileFolderComboBox = new ComboBox();
             scanMoreFoldersCheckBox = new CheckBox();
             filesizeLabel = new Label();
+            playGroupBox = new GroupBox();
+            audioProgressLabel = new Label();
+            playResumeButton = new Button();
+            audioProgressTrackBar = new TrackBar();
+            timerTrackBar = new System.Windows.Forms.Timer(components);
             statusStrip1.SuspendLayout();
+            playGroupBox.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)audioProgressTrackBar).BeginInit();
             SuspendLayout();
             // 
             // label1
@@ -88,7 +95,7 @@
             statusStrip1.ImageScalingSize = new Size(24, 24);
             statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1, toolStripStatusLabel2, toolStripProgressBar1 });
             statusStrip1.LayoutStyle = ToolStripLayoutStyle.HorizontalStackWithOverflow;
-            statusStrip1.Location = new Point(0, 116);
+            statusStrip1.Location = new Point(0, 234);
             statusStrip1.Name = "statusStrip1";
             statusStrip1.Size = new Size(531, 36);
             statusStrip1.SizingGrip = false;
@@ -171,12 +178,60 @@
             filesizeLabel.Size = new Size(0, 24);
             filesizeLabel.TabIndex = 9;
             // 
+            // playGroupBox
+            // 
+            playGroupBox.Controls.Add(audioProgressLabel);
+            playGroupBox.Controls.Add(playResumeButton);
+            playGroupBox.Controls.Add(audioProgressTrackBar);
+            playGroupBox.Enabled = false;
+            playGroupBox.Location = new Point(16, 112);
+            playGroupBox.Name = "playGroupBox";
+            playGroupBox.Size = new Size(502, 112);
+            playGroupBox.TabIndex = 10;
+            playGroupBox.TabStop = false;
+            playGroupBox.Text = "播放";
+            // 
+            // audioProgressLabel
+            // 
+            audioProgressLabel.AutoSize = true;
+            audioProgressLabel.Font = new Font("Microsoft YaHei UI", 7F);
+            audioProgressLabel.ForeColor = SystemColors.ControlDarkDark;
+            audioProgressLabel.Location = new Point(52, 78);
+            audioProgressLabel.Name = "audioProgressLabel";
+            audioProgressLabel.Size = new Size(93, 20);
+            audioProgressLabel.TabIndex = 2;
+            audioProgressLabel.Text = "00:00 / 00:00";
+            // 
+            // playResumeButton
+            // 
+            playResumeButton.Location = new Point(6, 29);
+            playResumeButton.Name = "playResumeButton";
+            playResumeButton.Size = new Size(40, 69);
+            playResumeButton.TabIndex = 1;
+            playResumeButton.Text = "▶️";
+            playResumeButton.UseVisualStyleBackColor = true;
+            playResumeButton.Click += playResumeButton_Click;
+            // 
+            // audioProgressTrackBar
+            // 
+            audioProgressTrackBar.Location = new Point(52, 29);
+            audioProgressTrackBar.Name = "audioProgressTrackBar";
+            audioProgressTrackBar.Size = new Size(444, 69);
+            audioProgressTrackBar.TabIndex = 0;
+            audioProgressTrackBar.TickStyle = TickStyle.Both;
+            audioProgressTrackBar.Scroll += audioProgressTrackBar_Scroll;
+            // 
+            // timerTrackBar
+            // 
+            timerTrackBar.Tick += timerTrackBar_Tick;
+            // 
             // WndMain
             // 
             AllowDrop = true;
             AutoScaleDimensions = new SizeF(11F, 24F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(531, 152);
+            ClientSize = new Size(531, 270);
+            Controls.Add(playGroupBox);
             Controls.Add(filesizeLabel);
             Controls.Add(scanMoreFoldersCheckBox);
             Controls.Add(fileFolderComboBox);
@@ -193,11 +248,15 @@
             Name = "WndMain";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "NCMDumpGUI";
+            FormClosed += WndMain_FormClosed;
             DragDrop += WndMain_DragDrop;
             DragEnter += WndMain_DragEnter;
             KeyDown += WndMain_KeyDown;
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
+            playGroupBox.ResumeLayout(false);
+            playGroupBox.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)audioProgressTrackBar).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -218,5 +277,10 @@
         private ComboBox fileFolderComboBox;
         private CheckBox scanMoreFoldersCheckBox;
         private Label filesizeLabel;
+        private GroupBox playGroupBox;
+        private Button playResumeButton;
+        private TrackBar audioProgressTrackBar;
+        private Label audioProgressLabel;
+        private System.Windows.Forms.Timer timerTrackBar;
     }
 }

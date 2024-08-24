@@ -1,5 +1,3 @@
-using Dark.Net;
-
 namespace NCMDumpGUI
 {
     public static class GlobalVariables
@@ -16,7 +14,6 @@ namespace NCMDumpGUI
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            IDarkNet darkNet = DarkNet.Instance;
             if (!File.Exists(GlobalVariables.libncmdumpPath))
             {
                 MessageBox.Show("核心不存在\n请确认libncmdump.dll与本程序在同一目录", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -24,10 +21,7 @@ namespace NCMDumpGUI
             }
             else
             {
-                ApplicationConfiguration.Initialize();
                 Form mainForm = new WndMain(args);
-                Theme windowTheme = Theme.Auto;
-                darkNet.SetWindowThemeForms(mainForm, windowTheme);
                 Application.Run(mainForm);
             }
         }
