@@ -52,10 +52,13 @@
             openWithDefaultPlayerToolStripMenuItem = new ToolStripMenuItem();
             openFileLocationToolStripMenuItem = new ToolStripMenuItem();
             timerTrackBar = new System.Windows.Forms.Timer(components);
+            folderConvertContextMenuStrip = new ContextMenuStrip(components);
+            autoDumpToolStripMenuItem = new ToolStripMenuItem();
             statusStrip1.SuspendLayout();
             playGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)audioProgressTrackBar).BeginInit();
             playMoreBtnContextMenuStrip.SuspendLayout();
+            folderConvertContextMenuStrip.SuspendLayout();
             SuspendLayout();
             // 
             // label1
@@ -215,11 +218,12 @@
             audioProgressLabel.AutoSize = true;
             audioProgressLabel.Font = new Font("Microsoft YaHei UI", 7F);
             audioProgressLabel.ForeColor = SystemColors.ControlDarkDark;
-            audioProgressLabel.Location = new Point(52, 78);
+            audioProgressLabel.Location = new Point(403, 78);
             audioProgressLabel.Name = "audioProgressLabel";
             audioProgressLabel.Size = new Size(93, 20);
             audioProgressLabel.TabIndex = 2;
             audioProgressLabel.Text = "00:00 / 00:00";
+            audioProgressLabel.TextAlign = ContentAlignment.MiddleRight;
             // 
             // playResumeButton
             // 
@@ -242,28 +246,48 @@
             // 
             // playMoreBtnContextMenuStrip
             // 
+            playMoreBtnContextMenuStrip.BackgroundImageLayout = ImageLayout.None;
             playMoreBtnContextMenuStrip.ImageScalingSize = new Size(24, 24);
             playMoreBtnContextMenuStrip.Items.AddRange(new ToolStripItem[] { openWithDefaultPlayerToolStripMenuItem, openFileLocationToolStripMenuItem });
             playMoreBtnContextMenuStrip.Name = "playBtnContextMenuStrip";
-            playMoreBtnContextMenuStrip.Size = new Size(261, 64);
+            playMoreBtnContextMenuStrip.RenderMode = ToolStripRenderMode.System;
+            playMoreBtnContextMenuStrip.Size = new Size(281, 68);
             // 
             // openWithDefaultPlayerToolStripMenuItem
             // 
+            openWithDefaultPlayerToolStripMenuItem.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 134);
             openWithDefaultPlayerToolStripMenuItem.Name = "openWithDefaultPlayerToolStripMenuItem";
-            openWithDefaultPlayerToolStripMenuItem.Size = new Size(260, 30);
-            openWithDefaultPlayerToolStripMenuItem.Text = "用系统默认播放器打开";
+            openWithDefaultPlayerToolStripMenuItem.Size = new Size(280, 32);
+            openWithDefaultPlayerToolStripMenuItem.Text = "使用系统默认播放器打开";
             openWithDefaultPlayerToolStripMenuItem.Click += openWithDefaultPlayerToolStripMenuItem_Click;
             // 
             // openFileLocationToolStripMenuItem
             // 
             openFileLocationToolStripMenuItem.Name = "openFileLocationToolStripMenuItem";
-            openFileLocationToolStripMenuItem.Size = new Size(260, 30);
+            openFileLocationToolStripMenuItem.Size = new Size(280, 32);
             openFileLocationToolStripMenuItem.Text = "打开文件所在位置";
             openFileLocationToolStripMenuItem.Click += openFileLocationToolStripMenuItem_Click;
             // 
             // timerTrackBar
             // 
             timerTrackBar.Tick += timerTrackBar_Tick;
+            // 
+            // folderConvertContextMenuStrip
+            // 
+            folderConvertContextMenuStrip.ImageScalingSize = new Size(24, 24);
+            folderConvertContextMenuStrip.Items.AddRange(new ToolStripItem[] { autoDumpToolStripMenuItem });
+            folderConvertContextMenuStrip.Name = "folderConvertContextMenuStrip";
+            folderConvertContextMenuStrip.RenderMode = ToolStripRenderMode.System;
+            folderConvertContextMenuStrip.Size = new Size(286, 69);
+            // 
+            // autoDumpToolStripMenuItem
+            // 
+            autoDumpToolStripMenuItem.Enabled = false;
+            autoDumpToolStripMenuItem.Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold);
+            autoDumpToolStripMenuItem.Name = "autoDumpToolStripMenuItem";
+            autoDumpToolStripMenuItem.Size = new Size(285, 32);
+            autoDumpToolStripMenuItem.Text = "启用 文件夹实时自动转换";
+            autoDumpToolStripMenuItem.Click += autoDumpToolStripMenuItem_Click;
             // 
             // WndMain
             // 
@@ -298,6 +322,7 @@
             playGroupBox.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)audioProgressTrackBar).EndInit();
             playMoreBtnContextMenuStrip.ResumeLayout(false);
+            folderConvertContextMenuStrip.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -327,5 +352,7 @@
         private ToolStripMenuItem openWithDefaultPlayerToolStripMenuItem;
         private ToolStripMenuItem openFileLocationToolStripMenuItem;
         private Button playMoreButton;
+        private ContextMenuStrip folderConvertContextMenuStrip;
+        private ToolStripMenuItem autoDumpToolStripMenuItem;
     }
 }

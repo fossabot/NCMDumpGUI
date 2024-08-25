@@ -6,11 +6,19 @@ using System.Text;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using NAudio.Wave;
+using System.IO;
 
 namespace NCMDumpGUI
 {
     public partial class WndMain : Form
     {
+        // 变量初始化
+        private AudioFileReader audioFileReader;
+        private WaveOutEvent outputDevice;
+        private bool isPlaying = false;
+        private string resultAudioPath = "";
+        private FileSystemWatcher fileWatcher;
+
         // 窗口初始化
         public WndMain(string[] args)
         {
@@ -40,13 +48,13 @@ namespace NCMDumpGUI
             {
                 fileFolderComboBox.SelectedIndex = 0;
             }
+            fileWatcher = new FileSystemWatcher();
+            fileWatcher.Path = filepathTextBox.Text;
+            fileWatcher.Filter = "*.ncm";
+            fileWatcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName;
+            fileWatcher.Created += autoDumpFolderOnChanged;
+            fileWatcher.Error += autoDumpOnError;
         }
-
-        // 变量初始化
-        private AudioFileReader audioFileReader;
-        private WaveOutEvent outputDevice;
-        private bool isPlaying = false;
-        private string resultAudioPath = "";
 
         // 窗口标题栏右键菜单
         #region fields
@@ -314,7 +322,7 @@ namespace NCMDumpGUI
         // “转换”按钮被点击
         private void convertButton_Click(object sender, EventArgs e)
         {
-            Stop();
+            audioStop();
             playGroupBox.Enabled = false;
             filesizeLabel.Text = FileFolderSizeRetriever.GetSizeAsString(filepathTextBox.Text, scanMoreFoldersCheckBox.Checked);
             if (!File.Exists(GlobalVariables.libncmdumpPath))
@@ -524,10 +532,14 @@ namespace NCMDumpGUI
             if (fileFolderComboBox.SelectedIndex == 1)
             {
                 scanMoreFoldersCheckBox.Visible = true;
+                convertButton.ContextMenuStrip = folderConvertContextMenuStrip;
+                convertButton.Text = "批量转换";
             }
             else
             {
                 scanMoreFoldersCheckBox.Visible = false;
+                convertButton.ContextMenuStrip = null;
+                convertButton.Text = "转换";
             }
         }
 
@@ -553,7 +565,7 @@ namespace NCMDumpGUI
             playGroupBox.Enabled = false;
             if (isPlaying)
             {
-                Stop();
+                audioStop();
             }
         }
 
@@ -580,7 +592,7 @@ namespace NCMDumpGUI
             }
         }
 
-        private void Play()
+        private void audioPlay()
         {
             if (audioFileReader == null)
             {
@@ -600,10 +612,10 @@ namespace NCMDumpGUI
 
         private void OnPlaybackStopped(object sender, StoppedEventArgs e)
         {
-            Stop();
+            audioStop();
         }
 
-        private void Pause()
+        private void audioPause()
         {
             if (outputDevice != null)
             {
@@ -613,7 +625,7 @@ namespace NCMDumpGUI
             playResumeButton.Text = "▶️";
         }
 
-        private void Stop()
+        private void audioStop()
         {
             if (outputDevice != null)
             {
@@ -646,17 +658,17 @@ namespace NCMDumpGUI
         {
             if (isPlaying)
             {
-                Pause();
+                audioPause();
             }
             else
             {
-                Play();
+                audioPlay();
             }
         }
 
         private void WndMain_FormClosed(object sender, FormClosedEventArgs e)
         {
-            Stop();
+            audioStop();
         }
 
         private void openWithDefaultPlayerToolStripMenuItem_Click(object sender, EventArgs e)
@@ -672,6 +684,94 @@ namespace NCMDumpGUI
         private void playMoreButton_Click(object sender, EventArgs e)
         {
             playMoreBtnContextMenuStrip.Show(playMoreButton, new Point(0, playMoreButton.Height));
+        }
+
+        private void autoDumpFolderOnChanged(object source, FileSystemEventArgs e)
+        {
+            if (e.ChangeType == WatcherChangeTypes.Created)
+            {
+                if (CheckNCMBinary(e.FullPath))
+                {
+                    ProcessNCMFile(e.FullPath);
+                }
+            }
+        }
+
+        private void autoDumpOnError(object source, ErrorEventArgs e)
+        {
+            TaskDialog.ShowDialog(this, new TaskDialogPage()
+            {
+                Text = $"{e.GetException()}",
+                Heading = "发生错误",
+                Caption = "错误",
+                Buttons =
+                {
+                    TaskDialogButton.OK
+                },
+                Icon = TaskDialogIcon.Error,
+                DefaultButton = TaskDialogButton.OK
+            });
+            toolStripStatusLabel2.Text = "发生错误";
+        }
+
+        private void autoDumpToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Debug.WriteLine(filepathTextBox.Text);
+            if (filepathTextBox.Text == "")
+            {
+                TaskDialog.ShowDialog(this, new TaskDialogPage()
+                {
+                    Text = "请提供ncm文件路径",
+                    Heading = "文件路径为空！",
+                    Caption = "错误",
+                    Buttons =
+                {
+                    TaskDialogButton.OK
+                },
+                    Icon = TaskDialogIcon.Error,
+                    DefaultButton = TaskDialogButton.OK
+                });
+                toolStripStatusLabel2.Text = "请提供文件";
+            }
+            else if (Directory.Exists(filepathTextBox.Text))
+            {
+                if (fileWatcher.EnableRaisingEvents)
+                {
+                    autoDumpToolStripMenuItem.Text = "启用 文件夹实时自动转换";
+                    filepathTextBox.Enabled = true;
+                    browseButton.Enabled = true;
+                    convertButton.Enabled = true;
+                    fileFolderComboBox.Enabled = true;
+                    fixMetaDataCheckBox.Enabled = true;
+                    fileWatcher.EnableRaisingEvents = false;
+                }
+                else
+                {
+                    autoDumpToolStripMenuItem.Text = "关闭 文件夹实时自动转换";
+                    filepathTextBox.Enabled = false;
+                    browseButton.Enabled = false;
+                    convertButton.Enabled = false;
+                    fileFolderComboBox.Enabled = false;
+                    fixMetaDataCheckBox.Enabled = false;
+                    fileWatcher.EnableRaisingEvents = true;
+                }
+            }
+            else
+            {
+                TaskDialog.ShowDialog(this, new TaskDialogPage()
+                {
+                    Text = "请确认路径是否正确",
+                    Heading = "找不到文件",
+                    Caption = "错误",
+                    Buttons =
+                {
+                    TaskDialogButton.OK
+                },
+                    Icon = TaskDialogIcon.Error,
+                    DefaultButton = TaskDialogButton.OK
+                });
+                toolStripStatusLabel2.Text = "请确认路径是否正确";
+            }
         }
     }
 }
