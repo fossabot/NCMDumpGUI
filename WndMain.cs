@@ -102,23 +102,39 @@ namespace NCMDumpGUI
                 switch ((SystemMenuItem)m.WParam)
                 {
                     case SystemMenuItem.About:
-                        TaskDialog.ShowDialog(this, new TaskDialogPage()
+                        StringBuilder stringBuilder = new StringBuilder();
+                        stringBuilder.Append("版本：v1.0.2.1\n基于libncmdump开发\n使用MIT许可证开源\n其他依赖：\n    · Costura.Fody\n    · NAudio\n当前.NET版本：").Append(Environment.Version.ToString());
+                        TaskDialogButton[] buttons = new TaskDialogButton[]
                         {
-                            Text = "版本：v1.0.2.1\n基于libncmdump开发\n使用MIT许可证开源\n其他依赖：\n    · Costura.Fody\n    · NAudio\n当前.NET版本：" + Environment.Version.ToString(),
-                            Heading = "NCMDumpGUI",
-                            Caption = "关于",
-                            Buttons =
-                            {
-                                TaskDialogButton.OK
-                            },
-                            Icon = TaskDialogIcon.Information,
-                            DefaultButton = TaskDialogButton.OK
-                        });
+                            TaskDialogButton.OK,
+                        };
+                        showTaskDialog(stringBuilder.ToString(), "NCMDumpGUI", "关于", TaskDialogIcon.Information, buttons, TaskDialogButton.OK);
                         break;
                 }
             }
         }
         #endregion
+
+        public TaskDialogButton showTaskDialog(string text, string heading, string caption, TaskDialogIcon icon, TaskDialogButton[] buttons, TaskDialogButton defaultBtn)
+        {
+            TaskDialogPage page = new TaskDialogPage()
+            {
+                Text = text,
+                Heading = heading,
+                Caption = caption,
+                Icon = icon,
+                DefaultButton = defaultBtn
+            };
+
+            foreach (var button in buttons)
+            {
+                page.Buttons.Add(button);
+            }
+
+            TaskDialogButton result = TaskDialog.ShowDialog(this, page);
+            return result;
+        }
+
 
         // “浏览”按钮被点击
         private void browseButton_Click(object sender, EventArgs e)
@@ -150,7 +166,7 @@ namespace NCMDumpGUI
         {
             public static string GetSizeAsString(string path, bool includeSubdirectories)
             {
-                long fileSizeBytes = 0; // 初始化变量
+                long fileSizeBytes = 0;
                 if (File.Exists(path))
                 {
                     FileInfo fileInfo = new FileInfo(path);
@@ -228,18 +244,13 @@ namespace NCMDumpGUI
                         {
                             if (fileFolderComboBox.SelectedIndex == 0)
                             {
-                                TaskDialog.ShowDialog(this, new TaskDialogPage()
+                                StringBuilder stringBuilder = new StringBuilder();
+                                stringBuilder.Append("文件头为：").Append(header);
+                                TaskDialogButton[] buttons = new TaskDialogButton[]
                                 {
-                                    Text = "文件头为：" + header,
-                                    Heading = "不是ncm文件",
-                                    Caption = "错误",
-                                    Buttons =
-                                    {
-                                        TaskDialogButton.OK
-                                    },
-                                    Icon = TaskDialogIcon.Error,
-                                    DefaultButton = TaskDialogButton.OK
-                                });
+                                    TaskDialogButton.OK,
+                                };
+                                showTaskDialog(stringBuilder.ToString(), "不是ncm文件", "错误", TaskDialogIcon.Error, buttons, TaskDialogButton.OK);
                                 toolStripStatusLabel2.Text = "不是ncm文件！";
                             }
                             return false;
@@ -249,18 +260,11 @@ namespace NCMDumpGUI
                     {
                         if (fileFolderComboBox.SelectedIndex == 0)
                         {
-                            TaskDialog.ShowDialog(this, new TaskDialogPage()
+                            TaskDialogButton[] buttons = new TaskDialogButton[]
                             {
-                                Text = "不是ncm文件",
-                                Heading = "文件大小异常",
-                                Caption = "错误",
-                                Buttons =
-                                    {
-                                        TaskDialogButton.OK
-                                    },
-                                Icon = TaskDialogIcon.Error,
-                                DefaultButton = TaskDialogButton.OK
-                            });
+                                TaskDialogButton.OK,
+                            };
+                            showTaskDialog("文件大小异常", "不是ncm文件", "错误", TaskDialogIcon.Error, buttons, TaskDialogButton.OK);
                             toolStripStatusLabel2.Text = "文件大小异常，并不是ncm文件";
                         }
                         return false;
@@ -271,18 +275,13 @@ namespace NCMDumpGUI
             {
                 if (fileFolderComboBox.SelectedIndex == 0)
                 {
-                    TaskDialog.ShowDialog(this, new TaskDialogPage()
+                    StringBuilder stringBuilder = new StringBuilder();
+                    stringBuilder.Append("详细信息：").Append(ex.Message);
+                    TaskDialogButton[] buttons = new TaskDialogButton[]
                     {
-                        Text = "详细信息：" + ex.Message,
-                        Heading = "发生错误",
-                        Caption = "错误",
-                        Buttons =
-                                    {
-                                        TaskDialogButton.OK
-                                    },
-                        Icon = TaskDialogIcon.Error,
-                        DefaultButton = TaskDialogButton.OK
-                    });
+                        TaskDialogButton.OK,
+                    };
+                    showTaskDialog(stringBuilder.ToString(), "发生错误", "错误", TaskDialogIcon.Error, buttons, TaskDialogButton.OK);
                     toolStripStatusLabel2.Text = "载入文件时发生错误";
                 }
                 return false;
@@ -307,6 +306,7 @@ namespace NCMDumpGUI
             }
         }
 
+        // 处理文件
         public int ProcessNCMFile(string path)
         {
             NeteaseCrypt neteaseCrypt = new NeteaseCrypt(path);
@@ -327,20 +327,12 @@ namespace NCMDumpGUI
             filesizeLabel.Text = FileFolderSizeRetriever.GetSizeAsString(filepathTextBox.Text, scanMoreFoldersCheckBox.Checked);
             if (!File.Exists(GlobalVariables.libncmdumpPath))
             {
-                TaskDialogButton result = TaskDialog.ShowDialog(this, new TaskDialogPage()
-                {
-                    Text = "请确认libncmdump.dll与本程序在同一目录",
-                    Heading = "核心不存在",
-                    Caption = "错误",
-                    Buttons =
+                TaskDialogButton[] buttons = new TaskDialogButton[]
                 {
                     TaskDialogButton.Retry,
-                    TaskDialogButton.OK
-                },
-                    Icon = TaskDialogIcon.Error,
-                    DefaultButton = TaskDialogButton.OK
-                });
-                if (result == TaskDialogButton.Retry)
+                    TaskDialogButton.OK,
+                };
+                if (showTaskDialog("请确认libncmdump.dll与本程序在同一目录", "核心不存在", "错误", TaskDialogIcon.Error, buttons, TaskDialogButton.OK) == TaskDialogButton.Retry)
                 {
                     convertButton.PerformClick();
                 }
@@ -348,34 +340,20 @@ namespace NCMDumpGUI
             }
             else if (filepathTextBox.Text == "")
             {
-                TaskDialog.ShowDialog(this, new TaskDialogPage()
+                TaskDialogButton[] buttons = new TaskDialogButton[]
                 {
-                    Text = "请提供ncm文件路径",
-                    Heading = "文件路径为空！",
-                    Caption = "错误",
-                    Buttons =
-                {
-                    TaskDialogButton.OK
-                },
-                    Icon = TaskDialogIcon.Error,
-                    DefaultButton = TaskDialogButton.OK
-                });
+                    TaskDialogButton.OK,
+                };
+                showTaskDialog("请提供ncm文件路径", "文件路径为空！", "错误", TaskDialogIcon.Error, buttons, TaskDialogButton.OK);
                 toolStripStatusLabel2.Text = "请提供文件";
             }
             else if (!IsValidFilePath(filepathTextBox.Text))
             {
-                TaskDialog.ShowDialog(this, new TaskDialogPage()
+                TaskDialogButton[] buttons = new TaskDialogButton[]
                 {
-                    Text = "文件路径中包含非法字符！",
-                    Heading = "非法文件路径",
-                    Caption = "错误",
-                    Buttons =
-                {
-                    TaskDialogButton.OK
-                },
-                    Icon = TaskDialogIcon.Error,
-                    DefaultButton = TaskDialogButton.OK
-                });
+                    TaskDialogButton.OK,
+                };
+                showTaskDialog("文件路径中包含非法字符！", "非法文件路径", "错误", TaskDialogIcon.Error, buttons, TaskDialogButton.OK);
                 toolStripStatusLabel2.Text = "非法文件路径";
             }
             else
@@ -413,25 +391,21 @@ namespace NCMDumpGUI
                         toolStripProgressBar1.Value = allProcessedFiles;
                         toolStripStatusLabel2.Text = "已处理：" + allProcessedFiles.ToString();
                     }
-                    toolStripStatusLabel2.Text = "成功：" + processedFiles.ToString() + "；失败：" + bypassFiles.ToString() + "；跳过：" + unprocessFiles.ToString();
+                    StringBuilder stringBuilder = new StringBuilder();
+                    stringBuilder.Append("成功：").Append(processedFiles.ToString()).Append("；失败：").Append(bypassFiles.ToString()).Append("；跳过：").Append(unprocessFiles.ToString());
+                    // toolStripStatusLabel2.Text = "成功：" + processedFiles.ToString() + "；失败：" + bypassFiles.ToString() + "；跳过：" + unprocessFiles.ToString();
+                    toolStripStatusLabel2.Text = stringBuilder.ToString();
                 }
                 else if (fileFolderComboBox.SelectedIndex == 0)
                 {
                     toolStripProgressBar1.Maximum = 2;
                     if (!filepathTextBox.Text.EndsWith(".ncm"))
                     {
-                        TaskDialog.ShowDialog(this, new TaskDialogPage()
+                        TaskDialogButton[] buttons = new TaskDialogButton[]
                         {
-                            Text = "请提供ncm文件路径",
-                            Heading = "文件路径为空！",
-                            Caption = "错误",
-                            Buttons =
-                            {
-                                TaskDialogButton.OK
-                            },
-                            Icon = TaskDialogIcon.Error,
-                            DefaultButton = TaskDialogButton.OK
-                        });
+                            TaskDialogButton.OK,
+                        };
+                        showTaskDialog("请提供ncm文件路径", "文件路径为空！", "错误", TaskDialogIcon.Error, buttons, TaskDialogButton.OK);
                         toolStripStatusLabel2.Text = "请提供正确的ncm文件";
                     }
                     else if (CheckNCMBinary(filepathTextBox.Text))
@@ -460,7 +434,10 @@ namespace NCMDumpGUI
                                 displayFileName = Path.GetFileName(resultAudioPath);
                             }
 
-                            toolStripStatusLabel2.Text = "完成！文件名：" + displayFileName;
+                            StringBuilder stringBuilder = new StringBuilder();
+                            stringBuilder.Append("完成！文件名：").Append(displayFileName);
+                            // toolStripStatusLabel2.Text = "完成！文件名：" + displayFileName;
+                            toolStripStatusLabel2.Text = stringBuilder.ToString();
                             toolStripProgressBar1.Value += 1;
                             playGroupBox.Enabled = true;
                         }
@@ -506,6 +483,10 @@ namespace NCMDumpGUI
             {
                 string path = filePaths[0];
                 modifyByDrag = true;
+                if (path.Length > 1)
+                {
+                    toolStripStatusLabel2.Text = "提供了多个文件，仅加载了第一个";
+                }
                 if (Directory.Exists(path))
                 {
                     filepathTextBox.Text = path;
@@ -545,18 +526,11 @@ namespace NCMDumpGUI
 
         private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            TaskDialog.ShowDialog(this, new TaskDialogPage()
+            TaskDialogButton[] buttons = new TaskDialogButton[]
             {
-                Text = "此应用只用于学习用途，禁止用于商业或违法用途，\n请在遵守NCM文件提供平台的服务条款下使用本应用，\n作者对商业或违法使用本软件造成的任何后果不承担任何责任！",
-                Heading = "注意！",
-                Caption = "免责声明",
-                Buttons =
-                {
-                    TaskDialogButton.OK
-                },
-                Icon = TaskDialogIcon.Information,
-                DefaultButton = TaskDialogButton.OK
-            });
+                TaskDialogButton.OK,
+            };
+            showTaskDialog("此应用只用于学习用途，禁止用于商业或违法用途，\n请在遵守NCM文件提供平台的服务条款下使用本应用，\n作者对商业或违法使用本软件造成的任何后果不承担任何责任！", "注意！", "免责声明", TaskDialogIcon.Information, buttons, TaskDialogButton.OK);
         }
 
         private void filepathTextBox_TextChanged(object sender, EventArgs e)
@@ -601,6 +575,14 @@ namespace NCMDumpGUI
                 outputDevice.Init(audioFileReader);
             }
 
+            if (timerTrackBar == null)
+            {
+                timerTrackBar = new System.Windows.Forms.Timer();
+                timerTrackBar.Interval = 1000;
+                timerTrackBar.Tick += timerTrackBar_Tick;
+                timerTrackBar.Start();
+            }
+
             if (outputDevice.PlaybackState != PlaybackState.Playing)
             {
                 outputDevice.Play();
@@ -639,6 +621,13 @@ namespace NCMDumpGUI
             playResumeButton.Text = "▶️";
             audioProgressTrackBar.Value = 0;
             audioProgressLabel.Text = "00:00 / 00:00";
+            if (timerTrackBar != null)
+            {
+                timerTrackBar.Stop();
+                timerTrackBar.Tick -= timerTrackBar_Tick;
+                timerTrackBar.Dispose();
+                timerTrackBar = null;
+            }
         }
 
         private void timerTrackBar_Tick(object sender, EventArgs e)
@@ -699,18 +688,11 @@ namespace NCMDumpGUI
 
         private void autoDumpOnError(object source, ErrorEventArgs e)
         {
-            TaskDialog.ShowDialog(this, new TaskDialogPage()
+            TaskDialogButton[] buttons = new TaskDialogButton[]
             {
-                Text = $"{e.GetException()}",
-                Heading = "发生错误",
-                Caption = "错误",
-                Buttons =
-                {
-                    TaskDialogButton.OK
-                },
-                Icon = TaskDialogIcon.Error,
-                DefaultButton = TaskDialogButton.OK
-            });
+                TaskDialogButton.OK,
+            };
+            showTaskDialog($"{e.GetException()}", "发生错误", "错误", TaskDialogIcon.Error, buttons, TaskDialogButton.OK);
             toolStripStatusLabel2.Text = "发生错误";
         }
 
@@ -719,18 +701,11 @@ namespace NCMDumpGUI
             Debug.WriteLine(filepathTextBox.Text);
             if (filepathTextBox.Text == "")
             {
-                TaskDialog.ShowDialog(this, new TaskDialogPage()
+                TaskDialogButton[] buttons = new TaskDialogButton[]
                 {
-                    Text = "请提供ncm文件路径",
-                    Heading = "文件路径为空！",
-                    Caption = "错误",
-                    Buttons =
-                {
-                    TaskDialogButton.OK
-                },
-                    Icon = TaskDialogIcon.Error,
-                    DefaultButton = TaskDialogButton.OK
-                });
+                    TaskDialogButton.OK,
+                };
+                showTaskDialog("请提供ncm文件路径", "文件路径为空！", "错误", TaskDialogIcon.Error, buttons, TaskDialogButton.OK);
                 toolStripStatusLabel2.Text = "请提供文件";
             }
             else if (Directory.Exists(filepathTextBox.Text))
@@ -758,18 +733,11 @@ namespace NCMDumpGUI
             }
             else
             {
-                TaskDialog.ShowDialog(this, new TaskDialogPage()
+                TaskDialogButton[] buttons = new TaskDialogButton[]
                 {
-                    Text = "请确认路径是否正确",
-                    Heading = "找不到文件",
-                    Caption = "错误",
-                    Buttons =
-                {
-                    TaskDialogButton.OK
-                },
-                    Icon = TaskDialogIcon.Error,
-                    DefaultButton = TaskDialogButton.OK
-                });
+                    TaskDialogButton.OK,
+                };
+                showTaskDialog("请确认路径是否正确", "找不到文件", "错误", TaskDialogIcon.Error, buttons, TaskDialogButton.OK);
                 toolStripStatusLabel2.Text = "请确认路径是否正确";
             }
         }
