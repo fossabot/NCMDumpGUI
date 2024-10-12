@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using NAudio.Wave;
 using System.IO;
+using System.Drawing.Text;
 
 namespace NCMDumpGUI
 {
@@ -103,7 +104,7 @@ namespace NCMDumpGUI
                 {
                     case SystemMenuItem.About:
                         StringBuilder stringBuilder = new StringBuilder();
-                        stringBuilder.Append("版本：v1.0.2.1\n基于libncmdump开发\n使用MIT许可证开源\n其他依赖：\n    · Costura.Fody\n    · NAudio\n当前.NET版本：").Append(Environment.Version.ToString());
+                        stringBuilder.Append("版本：v1.1.0.0\n基于libncmdump开发\n使用MIT许可证开源\n其他依赖：\n    · Costura.Fody\n    · NAudio\n当前.NET版本：").Append(Environment.Version.ToString());
                         TaskDialogButton[] buttons = new TaskDialogButton[]
                         {
                             TaskDialogButton.OK,
@@ -309,8 +310,12 @@ namespace NCMDumpGUI
         // 处理文件
         public int ProcessNCMFile(string path)
         {
+            string savePath = "";
             NeteaseCrypt neteaseCrypt = new NeteaseCrypt(path);
-            int result = neteaseCrypt.Dump();
+            if (saveAsCheckBox.Checked) {
+                savePath = saveFolderTextBox.Text;
+            }
+            int result = neteaseCrypt.Dump(savePath);
             if (fixMetaDataCheckBox.Checked)
             {
                 neteaseCrypt.FixMetadata();
@@ -356,6 +361,15 @@ namespace NCMDumpGUI
                 showTaskDialog("文件路径中包含非法字符！", "非法文件路径", "错误", TaskDialogIcon.Error, buttons, TaskDialogButton.OK);
                 toolStripStatusLabel2.Text = "非法文件路径";
             }
+            else if (!IsValidFilePath(saveFolderTextBox.Text) && saveAsCheckBox.Checked)
+            {
+                TaskDialogButton[] buttons = new TaskDialogButton[]
+                {
+                    TaskDialogButton.OK,
+                };
+                showTaskDialog("保存文件路径中包含非法字符！", "非法文件路径", "错误", TaskDialogIcon.Error, buttons, TaskDialogButton.OK);
+                toolStripStatusLabel2.Text = "非法文件路径";
+            }
             else
             {
                 filepathTextBox.Enabled = false;
@@ -363,6 +377,10 @@ namespace NCMDumpGUI
                 convertButton.Enabled = false;
                 fileFolderComboBox.Enabled = false;
                 fixMetaDataCheckBox.Enabled = false;
+                if (saveAsCheckBox.Checked)
+                {
+                    saveAsGroupBox.Enabled = false;
+                }
                 if (fileFolderComboBox.SelectedIndex == 1)
                 {
                     int bypassFiles = 0;
@@ -427,7 +445,7 @@ namespace NCMDumpGUI
                             string displayFileName = "";
                             if (Path.GetFileName(resultAudioPath).Length >= 10)
                             {
-                                displayFileName = Path.GetFileName(resultAudioPath).Split(".")[0].Substring(0, 10) + "..." + Path.GetExtension(resultAudioPath);
+                                displayFileName = Path.GetFileName(resultAudioPath).Split(".")[0].Substring(0, 20) + "..." + Path.GetExtension(resultAudioPath);
                             }
                             else
                             {
@@ -442,6 +460,10 @@ namespace NCMDumpGUI
                             playGroupBox.Enabled = true;
                         }
                     }
+                }
+                if (saveAsCheckBox.Checked)
+                {
+                    saveAsGroupBox.Enabled = true;
                 }
                 filepathTextBox.Enabled = true;
                 browseButton.Enabled = true;
@@ -739,6 +761,23 @@ namespace NCMDumpGUI
                 };
                 showTaskDialog("请确认路径是否正确", "找不到文件", "错误", TaskDialogIcon.Error, buttons, TaskDialogButton.OK);
                 toolStripStatusLabel2.Text = "请确认路径是否正确";
+            }
+        }
+
+        private void saveAsCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            saveAsGroupBox.Enabled = saveAsCheckBox.Checked;
+        }
+
+        private void saveAsBrowserButton_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog dialog = new FolderBrowserDialog();
+            dialog.ShowNewFolderButton = true;
+            dialog.RootFolder = Environment.SpecialFolder.ApplicationData;
+            DialogResult result = dialog.ShowDialog();
+            if (result == DialogResult.OK)
+            {
+                saveFolderTextBox.Text = dialog.SelectedPath;
             }
         }
     }
