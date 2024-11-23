@@ -48,6 +48,7 @@ _截图来自 `v1.0.1.2`_
 
 ![在 Windows 11 上运行](/screenshots/Windows11.png)
 ![在 Windows 7 上运行](/screenshots/Windows7.png)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FWhatDamon%2FNCMDumpGUI.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FWhatDamon%2FNCMDumpGUI?ref=badge_shield)
 
 ## 依赖
 
@@ -59,3 +60,6 @@ _截图来自 `v1.0.1.2`_
 ## 鸣谢
 
 本项目使用到了 https://github.com/taurusxin/ncmdump 项目中的 `libncmdump.dll`
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FWhatDamon%2FNCMDumpGUI.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FWhatDamon%2FNCMDumpGUI?ref=badge_large)
